@@ -1,0 +1,1 @@
+export function createClock(now=0){return {last:now,remainder:0,step(now,eligible){const delta=Math.max(0,now-this.last);this.last=now;if(!eligible){this.remainder=0;return 0;}const total=this.remainder+delta;this.remainder=total%1000;return Math.floor(total/1000);}};}
