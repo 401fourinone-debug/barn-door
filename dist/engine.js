@@ -203,6 +203,7 @@ function triggerIncident(s){const seen=new Set((s.dutyHandled||[]).map(x=>x.key)
 function finishDutyJob(s){const job=s.dutyJob,definition=DUTY_EVENTS.find(e=>e.key===job.key),choice=definition.choices[job.choice];log(s,job.id,'回報',choice.actor,choice.reply,job.due);const e=s.events.find(e=>e.id===job.id);e.status=choice.pending?'已安排／待追蹤':'已結案';e.owner=choice.pending?'接班同事':choice.actor;e.closed=choice.pending?null:job.due;e.closedDay=s.day||1;bump(s,choice.health,choice.trust);s.last=choice.reply;s.dutyJob=null;}
 function processDuty(s){processInitialWork(s);if(s.ended||!mainWorkDone(s))return;if(s.dutyJob&&s.time>=s.dutyJob.due)finishDutyJob(s);if(!s.dutyJob&&!s.activeIncident&&s.nextIncidentAt!==null&&s.time>=s.nextIncidentAt){if(s.time<=930)triggerIncident(s);else s.nextIncidentAt=null;}}
 export function can(s,action){
+ if(action==='rest')return !s.ended?'先完成交班，再休息。':s.resting?'已經在休息。':(s.day||1)>=3?'三天試玩已完成。':null;
  if(action==='readBacklog')return s.ended?'本班已結束，可查看但不用重新確認。':null;
  if(action==='assignInherited')return s.ended?'本班已結束。':!s.signed?'先接下這一班，再安排人手。':s.activeIncident?'先回應剛才的狀況。':null;
  if(action==='tick')return s.ended?'今天已下班。':!mainWorkDone(s)?'先處理眼前的工作。':s.standbyPaused?'時鐘已暫停。':s.activeIncident?'先回應剛發生的事。':s.time>=SHIFT_END?'已到交班時間。':null;
@@ -221,6 +222,7 @@ export function can(s,action){
 }
 export function act(state,action,payload={}){
  const reason=can(state,action);if(reason)return {state,error:reason};
+ if(action==='rest'){const s=structuredClone(state);s.resting=true;s.location='dorm';s.time=1230;s.last='20:30。晚餐後回到寢室，夜班已接手。睡前可以看看公共區域，準備好就休息。';processInitialWork(s);return {state:s,error:null};}
  if(action==='move'&&mainWorkDone(state)&&state.time<SHIFT_END){if(!['dorm','canteen','gate','engineering'].includes(payload.location))return {state,error:'未知地點。'};const s=structuredClone(state);s.location=payload.location;s.last='換個位置查看。對講機保持聯絡，值勤時鐘不會因切換場景而跳時間。';return {state:s,error:null};}
  if(action==='readBacklog'){const s=structuredClone(state);s.backlogReviewed=true;s.last='已看過上一班留下的工作。接班後先安排待辦，同事正在做的事不用重派。';return {state:s,error:null};}
  if(action==='assignInherited'){return assignInitialWork(state,payload);}
