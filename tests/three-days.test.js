@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {createState,act,can,workflow,restoreState,CASE_ID} from '../dist/engine.js';
-function go(s,a,p){const r=act(s,a,p);assert.equal(r.error,null,`day${s.day} ${a}: ${r.error}`);return r.state;}
+function go(s,a,p){if(a==='readRoster'&&!s.backlogReviewed)s=go(s,'readBacklog');const r=act(s,a,p);assert.equal(r.error,null,`day${s.day} ${a}: ${r.error}`);let next=r.state;if(a==='sign'){for(const j of next.inheritedJobs||[])if(j.status==='待安排')next=go(next,'assignInherited',{id:j.id,choice:0});}return next;}
 function morning(s){s=go(s,'gear');s=go(s,'move',{location:'canteen'});s=go(s,'eat');s=go(s,'readRoster');s=go(s,'move',{location:'gate'});return go(s,'sign');}
 function end(s){if(s.location!=='gate')s=go(s,'move',{location:'gate'});while(s.time<960||s.activeIncident){s=go(s,s.activeIncident?'respondIncident':'tick',s.activeIncident?{choice:0}:{});}s=go(s,'reviewHandover');return go(s,'handover');}
 function first(choice){let s=morning(createState());for(const a of ['inspectReader','arrivals','checkId','manifest'])s=go(s,a);if(choice==='delegated'){s=go(s,'delegate');s=go(s,'wait');}else{for(const a of ['receiveStandard','closeOuter'])s=go(s,a);if(choice==='held'){s=go(s,'hold');s=go(s,'leaveHeld');}else if(choice==='approved'){for(const a of ['callMedical','wait','approve'])s=go(s,a);}else s=go(s,choice==='returned'?'return':'bypass');}return end(s);}

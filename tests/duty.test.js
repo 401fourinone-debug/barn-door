@@ -2,7 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {createState,act,can,workflow,restoreState} from '../dist/engine.js';
 import {createClock} from '../dist/duty-clock.js';
-function ready(seed=7){return {...createState('normal',seed),day:2,location:'gate',time:530,signed:true,gear:true,ate:true,rosterRead:true,dayDone:true,dayChoice:'repaired',events:[{id:'EV-21260917-001',title:'維修',category:'維修',opened:480,openedDay:2,status:'查核中',owner:'玩家',entries:[],attachments:[],closed:null}]};}
+function ready(seed=7){return {...createState('normal',seed),inheritedJobs:[],backlogReviewed:true,day:2,location:'gate',time:530,signed:true,gear:true,ate:true,rosterRead:true,dayDone:true,dayChoice:'repaired',events:[{id:'EV-21260917-001',title:'維修',category:'維修',opened:480,openedDay:2,status:'查核中',owner:'玩家',entries:[],attachments:[],closed:null}]};}
 function step(s,a,p){const r=act(s,a,p);assert.equal(r.error,null,r.error);return r.state;}
 test('一秒只推進一分鐘，不到16:00不能交班',()=>{let s=ready();assert.match(can(s,'reviewHandover'),/還沒到/);assert.equal(workflow(s).panel,'standby');s=step(s,'tick',{minutes:99});assert.equal(s.time,531);assert.equal(s.standbyStarted,true);});
 test('待命暫停不會走時間，恢復後接著走',()=>{let s=step(ready(),'toggleStandby');assert.ok(can(s,'tick'));const at=s.time;s=step(s,'toggleStandby');s=step(s,'tick');assert.equal(s.time,at+1);});

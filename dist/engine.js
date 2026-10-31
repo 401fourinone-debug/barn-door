@@ -1,3 +1,4 @@
+import {createInitialWork,assignmentEta} from './initial-work.js';
 import {DUTY_EVENTS} from './duty-events.js';
 export const VERSION = 1;
 export const DIFFICULTIES = {easy:{name:'容易',threshold:60,initial:87,review:12},normal:{name:'中等',threshold:75,initial:82,review:16},hard:{name:'最難',threshold:90,initial:78,review:24}};
@@ -6,7 +7,8 @@ export const ROUTINE_ID = 'EV-21260916-003';
 export const timeText = m => `${String(Math.floor(m/60)).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`;
 export function createState(difficulty='normal',seed=Math.floor(Math.random()*4294967295)) {
   if (!DIFFICULTIES[difficulty]) difficulty='normal';
-  return {dutySeed:seed>>>0,standbyStarted:false,standbyPaused:false,nextIncidentAt:null,activeIncident:null,dutyJob:null,dutyHandled:[],day:1,history:[],handoverRead:false,readerRepaired:false,repairDeferred:false,version:VERSION,difficulty,time:410,location:'dorm',health:DIFFICULTIES[difficulty].initial,trust:78,stamina:84,fatigue:22,pressure:12,gear:false,ate:false,rosterRead:false,signed:false,readerChecked:false,readerClean:false,arrived:false,idChecked:false,manifestChecked:false,claimHeard:false,held:false,standardReceived:false,medicalRequested:false,medicalDue:null,medicalReviewed:false,delegated:false,delegateDue:null,decision:null,innerGate:'closed',outerGate:'closed',gateDue:null,ended:false,events:[],rosterDraft:{gate:'資深守門人',engineering:'工程師',medical:'醫療負責人',logistics:'後勤人員'},flags:[],last:'你在普通的九月早晨醒來。通風正常，早餐供應中。'};
+  const initial=createInitialWork(difficulty);
+  return {inheritedJobs:initial.jobs,backlogReviewed:false,dutySeed:seed>>>0,standbyStarted:false,standbyPaused:false,nextIncidentAt:null,activeIncident:null,dutyJob:null,dutyHandled:[],day:1,history:[],handoverRead:false,readerRepaired:false,repairDeferred:false,version:VERSION,difficulty,time:410,location:'dorm',health:DIFFICULTIES[difficulty].initial,trust:78,stamina:84,fatigue:22,pressure:12,gear:false,ate:false,rosterRead:false,signed:false,readerChecked:false,readerClean:false,arrived:false,idChecked:false,manifestChecked:false,claimHeard:false,held:false,standardReceived:false,medicalRequested:false,medicalDue:null,medicalReviewed:false,delegated:false,delegateDue:null,decision:null,innerGate:'closed',outerGate:'closed',gateDue:null,ended:false,events:initial.events,rosterDraft:{gate:'資深守門人',engineering:'工程師',medical:'醫療負責人',logistics:'後勤人員'},flags:[],last:'你在普通的九月早晨醒來。通風正常，早餐供應中。'};
 }
 export function caseEvent(s){return s.events.find(e=>e.id===CASE_ID);}
 function ensureEvent(s,id,title,category){let e=s.events.find(e=>e.id===id);if(!e){e={id,title,category,opened:s.time,openedDay:s.day||1,status:'查核中',owner:'玩家',closed:null,entries:[],attachments:[]};s.events.push(e);}return e;}
@@ -28,7 +30,7 @@ function firstDayCan(s,action){
   if(gateActions.includes(action)&&s.location!=='gate')return '請先前往門禁控制室。';
   if(action==='gear')return s.gear?'已取得工作裝備。':null;
   if(action==='eat')return s.ate?'本班餐點已領取，無需重複領餐。':s.location!=='canteen'?'請先前往餐廳。':null;
-  if(action==='readRoster')return !s.gear?'先拿好工作服和識別證。':!s.ate?'先到餐廳吃早餐，再聽上一班說明。':s.rosterRead?'已經聽過上一班的提醒。':null;
+  if(action==='readRoster')return !s.backlogReviewed?'先看看上一班留下的待辦，分清楚哪些要你安排、哪些同事正在做。':!s.gear?'先拿好工作服和識別證。':!s.ate?'先到餐廳吃早餐，再聽上一班說明。':s.rosterRead?'已經聽過上一班的提醒。':null;
   if(action==='sign')return s.signed?'已完成接班。':!s.gear?'先回置物櫃取工作裝備與識別證。':!s.rosterRead?'先閱讀交班事項。':s.location!=='gate'?'請在門禁控制室完成接班。':null;
   if(gateActions.includes(action)&&!s.signed)return '先閱讀交班事項並完成接班。';
   if(action==='inspectReader')return s.readerChecked?'已完成讀取器檢查。':null;
@@ -103,7 +105,7 @@ function firstDayWorkflow(s){
 }
 export function objective(s){return workflow(s).text;}
 function firstDayOutcome(s){const names={approved:'查核後接收',returned:'依程序退回',delegated:'協作完成',held:'留置並交接',bypassed:'未核驗放行'};return {title:names[s.decision]||'尚未完成',threshold:DIFFICULTIES[s.difficulty].threshold,passed:s.health>=DIFFICULTIES[s.difficulty].threshold&&s.trust>=DIFFICULTIES[s.difficulty].threshold,lesson:{approved:'你取得證據、完成授權與驗收。額外耗材可使用，未登記的原因也有紀錄。',returned:'你維持入區程序，也承擔醫療耗材延後的代價。這是可行選擇，並非隱藏錯誤答案。',delegated:'你把責任交給有能力的人，並取得可查核回報。庇護所不需要你親自完成每個步驟。',held:'事情尚未結案，但物資保管、承辦人與後續責任清楚。未完成事項也能負責任地交接。',bypassed:'沒有憑空發生感染，但你跳過查核的事實會影響信任，並成為後續待查事項。'}[s.decision]||''};}
-export function restoreState(raw){try{const s=JSON.parse(raw);if(s.version!==VERSION||!DIFFICULTIES[s.difficulty]||!Array.isArray(s.events)||!Number.isFinite(s.time)||!['dorm','canteen','gate','engineering'].includes(s.location))return null;return {...createState(s.difficulty),...s};}catch{return null;}}
+export function restoreState(raw){try{const s=JSON.parse(raw);if(s.version!==VERSION||!DIFFICULTIES[s.difficulty]||!Array.isArray(s.events)||!Number.isFinite(s.time)||!['dorm','canteen','gate','engineering'].includes(s.location))return null;return {...createState(s.difficulty),...s,inheritedJobs:Array.isArray(s.inheritedJobs)?s.inheritedJobs:[],backlogReviewed:s.backlogReviewed??true};}catch{return null;}}
 
 export const dateText=s=>`2126.09.${15+(s.day||1)}`;
 export const dayCaseId=s=>(s.day||1)===1?CASE_ID:(s.day===2?'EV-21260917-001':'EV-21260918-001');
@@ -137,7 +139,7 @@ function missionAct(state,action,payload={}){
  const error=can(state,action);if(error)return {state,error};
  if(action==='nextDay'){
   const fresh=createState(state.difficulty,((state.dutySeed||1)+2654435761)>>>0),history=[...(state.history||[]),{day:state.day||1,decision:state.decision||state.dayChoice,health:state.health,trust:state.trust}];
-  const s={...fresh,day:(state.day||1)+1,history,events:structuredClone(state.events),health:state.health,trust:state.trust,readerRepaired:!!state.readerRepaired,repairDeferred:!!state.repairDeferred,rosterDraft:structuredClone(state.rosterDraft),fatigue:Math.max(8,state.fatigue-10),last:'睡了一晚，起床了。今天有新的交班提醒。'};return {state:s,error:null};
+  const s={...fresh,day:(state.day||1)+1,history,events:structuredClone(state.events),inheritedJobs:structuredClone(state.inheritedJobs||[]),backlogReviewed:false,health:state.health,trust:state.trust,readerRepaired:!!state.readerRepaired,repairDeferred:!!state.repairDeferred,rosterDraft:structuredClone(state.rosterDraft),fatigue:Math.max(8,state.fatigue-10),last:'睡了一晚，起床了。今天有新的交班提醒。'};return {state:s,error:null};
  }
  if((state.day||1)===1)return firstDayAct(state,action,payload);
  if(['move','gear','eat','readRoster','note','draft'].includes(action)){
@@ -192,32 +194,36 @@ export function outcome(s){
 function markReaderFixed(s){for(const id of [ROUTINE_ID,'EV-21260917-001']){const e=s.events.find(e=>e.id===id);if(e){e.status='已結案';e.closed=s.time;e.closedDay=s.day;e.owner='工程師';}}const routine=s.events.find(e=>e.id===ROUTINE_ID);if(routine)log(s,ROUTINE_ID,'完成','工程師','指紋機已修好並試用正常，原報修紀錄完成。');}
 
 export const SHIFT_END=960;
-export function mainWorkDone(s){return !!s.signed&&((s.day||1)===1?!!s.standardReceived&&!!s.decision&&s.delegateDue===null&&s.outerGate==='closed':!!s.dayDone);}
+export function mainWorkDone(s){return !!s.signed&&!(s.inheritedJobs||[]).some(j=>j.status==='待安排')&&((s.day||1)===1?!!s.standardReceived&&!!s.decision&&s.delegateDue===null&&s.outerGate==='closed':!!s.dayDone);}
 function randomDuty(s){s.dutySeed=(Math.imul(s.dutySeed||1,1664525)+1013904223)>>>0;return s.dutySeed/4294967296;}
 function scheduleDuty(s,first=false){const at=s.time+(first?20+Math.floor(randomDuty(s)*26):48+Math.floor(randomDuty(s)*33));s.nextIncidentAt=at<=930&&(s.dutyHandled||[]).length<5?at:null;}
 function startStandby(s){if(mainWorkDone(s)&&!s.ended&&!s.standbyStarted){s.standbyStarted=true;s.standbyPaused=false;s.dutyHandled=s.dutyHandled||[];scheduleDuty(s,true);if(s.time<SHIFT_END)s.last='主要工作已安排好。接著繼續待命，時鐘每秒走一分鐘，到下午四點再交班。';}}
 function incidentId(s){return `EV-212609${15+(s.day||1)}-D${String((s.dutyHandled||[]).length+1).padStart(2,'0')}`;}
 function triggerIncident(s){const seen=new Set((s.dutyHandled||[]).map(x=>x.key));const pool=DUTY_EVENTS.filter(x=>!seen.has(x.key));if(!pool.length){s.nextIncidentAt=null;return;}const event=pool[Math.floor(randomDuty(s)*pool.length)];const id=incidentId(s);s.activeIncident={key:event.key,id,opened:s.time};s.nextIncidentAt=null;ensureEvent(s,id,event.title,'待命事件');log(s,id,'通知',event.from,event.text);s.last=`${event.from}：${event.title}。時鐘已暫停，先回應這件事。`;}
 function finishDutyJob(s){const job=s.dutyJob,definition=DUTY_EVENTS.find(e=>e.key===job.key),choice=definition.choices[job.choice];log(s,job.id,'回報',choice.actor,choice.reply,job.due);const e=s.events.find(e=>e.id===job.id);e.status=choice.pending?'已安排／待追蹤':'已結案';e.owner=choice.pending?'接班同事':choice.actor;e.closed=choice.pending?null:job.due;e.closedDay=s.day||1;bump(s,choice.health,choice.trust);s.last=choice.reply;s.dutyJob=null;}
-function processDuty(s){if(s.ended||!mainWorkDone(s))return;if(s.dutyJob&&s.time>=s.dutyJob.due)finishDutyJob(s);if(!s.dutyJob&&!s.activeIncident&&s.nextIncidentAt!==null&&s.time>=s.nextIncidentAt){if(s.time<=930)triggerIncident(s);else s.nextIncidentAt=null;}}
+function processDuty(s){processInitialWork(s);if(s.ended||!mainWorkDone(s))return;if(s.dutyJob&&s.time>=s.dutyJob.due)finishDutyJob(s);if(!s.dutyJob&&!s.activeIncident&&s.nextIncidentAt!==null&&s.time>=s.nextIncidentAt){if(s.time<=930)triggerIncident(s);else s.nextIncidentAt=null;}}
 export function can(s,action){
+ if(action==='readBacklog')return s.ended?'本班已結束，可查看但不用重新確認。':null;
+ if(action==='assignInherited')return s.ended?'本班已結束。':!s.signed?'先接下這一班，再安排人手。':s.activeIncident?'先回應剛才的狀況。':null;
  if(action==='tick')return s.ended?'今天已下班。':!mainWorkDone(s)?'先處理眼前的工作。':s.standbyPaused?'時鐘已暫停。':s.activeIncident?'先回應剛發生的事。':s.time>=SHIFT_END?'已到交班時間。':null;
  if(action==='toggleStandby')return !mainWorkDone(s)||s.ended||s.time>=SHIFT_END?'目前沒有在待命。':s.activeIncident?'事件處理完才會繼續走時鐘。':null;
  if(action==='respondIncident')return !s.activeIncident?'目前沒有需要回應的新狀況。':null;
  if(action==='wait'&&mainWorkDone(s))return '工作已安排好，待命時鐘會自動前進，不需要再跳時間。';
- if(mainWorkDone(s)&&!s.ended&&s.time<SHIFT_END&&!['tick','toggleStandby','respondIncident','move','note','draft','reviewHandover','handover'].includes(action))return '主要工作已安排好。現在繼續待命，有新狀況時再處理。';
+ if(mainWorkDone(s)&&!s.ended&&s.time<SHIFT_END&&!['tick','toggleStandby','respondIncident','readBacklog','assignInherited','move','note','draft','reviewHandover','handover'].includes(action))return '主要工作已安排好。現在繼續待命，有新狀況時再處理。';
  if(['reviewHandover','handover'].includes(action)){
   const missionReason=missionCan(s,action);if(missionReason)return missionReason;
   if(s.time<SHIFT_END)return `還沒到下班時間。現在 ${timeText(s.time)}，下午四點才能交班。`;
   if(s.activeIncident)return '先回應正在發生的事，再交班。';
   if(s.dutyJob)return '同事還在處理，等回報後再交班。';
  }
- if(s.activeIncident&&!['respondIncident','note','draft','nextDay'].includes(action))return '先回應剛發生的狀況；可以打開事件簿查看資料。';
+ if(s.activeIncident&&!['respondIncident','readBacklog','note','draft','nextDay'].includes(action))return '先回應剛發生的狀況；可以打開事件簿查看資料。';
  return missionCan(s,action);
 }
 export function act(state,action,payload={}){
  const reason=can(state,action);if(reason)return {state,error:reason};
  if(action==='move'&&mainWorkDone(state)&&state.time<SHIFT_END){if(!['dorm','canteen','gate','engineering'].includes(payload.location))return {state,error:'未知地點。'};const s=structuredClone(state);s.location=payload.location;s.last='換個位置查看。對講機保持聯絡，值勤時鐘不會因切換場景而跳時間。';return {state:s,error:null};}
+ if(action==='readBacklog'){const s=structuredClone(state);s.backlogReviewed=true;s.last='已看過上一班留下的工作。接班後先安排待辦，同事正在做的事不用重派。';return {state:s,error:null};}
+ if(action==='assignInherited'){return assignInitialWork(state,payload);}
  if(action==='tick'){
   const s=structuredClone(state);startStandby(s);advance(s,1);
   processDuty(s);
@@ -232,7 +238,26 @@ export function act(state,action,payload={}){
  const result=missionAct(state,action,payload);if(!result.error){startStandby(result.state);processDuty(result.state);}return result;
 }
 export function workflow(s){
+ if(!s.ended&&!s.activeIncident&&s.signed&&(s.inheritedJobs||[]).some(j=>j.status==='待安排'))return {stage:2,text:'先安排上一班留下的待辦；同事已經在做的工作，不用你全部接手。',panel:'workboard'};
  if(!s.ended&&s.activeIncident)return {stage:2,text:'有新的狀況需要回應，時鐘先停在這裡。',panel:'incident'};
  if(!s.ended&&mainWorkDone(s)&&s.time<SHIFT_END)return {stage:2,text:s.standbyPaused?'待命時鐘已暫停。準備好後可繼續。':s.dutyJob?'同事正在處理剛才的事，等回報時也要繼續顧門。':`主要工作已安排好，繼續值勤到 16:00。現在 ${timeText(s.time)}。`,panel:'standby'};
  return missionWorkflow(s);
+}
+
+function processInitialWork(s){
+ const now=((s.day||1)-1)*1440+s.time;
+ for(const job of s.inheritedJobs||[]){
+  const e=s.events.find(e=>e.id===job.id);if(!e)continue;
+  if(job.status==='處理中'&&job.due!=null&&now>=((job.dueDay||1)-1)*1440+job.due){
+   job.status='已完成';job.progress=job.reply;job.next='已完成，可查看處理紀錄。';e.status='已結案';e.owner=job.owner;e.closed=job.due;e.closedDay=job.dueDay||1;e.entries.push({id:job.id+'-'+(e.entries.length+1),day:job.dueDay||1,time:job.due,type:'完成回報',actor:job.owner,text:job.reply});s.last=`${job.owner}回報：${job.reply}`;
+  }
+  if(job.status==='待安排'&&job.deadline!=null&&now>((job.deadlineDay||1)-1)*1440+job.deadline&&!job.overdue){job.overdue=true;e.entries.push({id:job.id+'-'+(e.entries.length+1),day:s.day||1,time:s.time,type:'提醒',actor:'交班紀錄',text:'超過原訂安排時間，請接班人說明後續；不自動假定設備失效。'});}
+ }
+}
+function assignInitialWork(state,payload){
+ const s=structuredClone(state),job=(s.inheritedJobs||[]).find(j=>j.id===payload.id),index=Number(payload.choice),choice=job?.options?.[index];
+ if(!job||job.status!=='待安排'||!choice)return {state,error:'這件工作已有人處理，或選項不正確。'};
+ const e=s.events.find(e=>e.id===job.id);if(!e)return {state,error:'找不到這件工作的紀錄。'};
+ const eta=assignmentEta(s,choice);job.owner=choice.actor;job.status=choice.pending?'已安排／待追蹤':'處理中';job.progress=choice.label+(eta.queued?'；負責人先完成手上的工作，再接這一件。':'');job.next=choice.pending?'物品繼續保管，接班同事追蹤本人確認。':`等${choice.actor}回報，不必重派。`;job.reply=choice.reply;job.due=choice.pending?null:eta.due;job.dueDay=s.day||1;e.owner=choice.actor;e.status=job.status;e.entries.push({id:job.id+'-'+(e.entries.length+1),day:s.day||1,time:s.time,type:'接手安排',actor:'玩家 → '+choice.actor,text:choice.label+'。'+job.next});s.last=choice.pending?'保管位置和後續責任已交代清楚。':`已請${choice.actor}處理，預計 ${timeText(job.due)} 回報。${eta.queued?'他手上已有工作，這件會接著做。':''}`;
+ startStandby(s);processInitialWork(s);return {state:s,error:null};
 }
