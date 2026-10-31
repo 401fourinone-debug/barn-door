@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {createState,act,can,restoreState,CASE_ID} from '../dist/engine.js';
-const doIt=(s,a,p)=>{const r=act(s,a,p);assert.equal(r.error,null,`${a}: ${r.error}`);return r.state;};
+const doIt=(s,a,p)=>{if(a==='handover'){if(!s.decision&&s.held)s=doIt(s,'leaveHeld');if(!s.handoverRead)s=doIt(s,'reviewHandover');}const r=act(s,a,p);assert.equal(r.error,null,`${a}: ${r.error}`);return r.state;};
 function arrive(difficulty='normal'){let s=createState(difficulty);s=doIt(s,'gear');s=doIt(s,'move',{location:'canteen'});s=doIt(s,'eat');s=doIt(s,'readRoster');s=doIt(s,'move',{location:'gate'});s=doIt(s,'sign');s=doIt(s,'inspectReader');s=doIt(s,'arrivals');return s;}
 function review(){let s=arrive();for(const a of ['checkId','manifest','visitor','hold','callMedical','receiveStandard','wait'])s=doIt(s,a);return s;}
 test('不能未接班就操作，不能沒看交班就接班',()=>{let s=createState();assert.ok(can(s,'sign'));assert.ok(can(s,'checkId'));assert.deepEqual(act(s,'checkId').state,s);});
