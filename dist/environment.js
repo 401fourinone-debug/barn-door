@@ -14,17 +14,17 @@ export function environmentAt(day=1,time=410){
  return {day,time,phase,phaseName:{dawn:'清晨',day:'白天',dusk:'傍晚',night:'夜間'}[phase],kind,label,temperature,detail,art:phase==='night'?SCENE_ART.night:['rain','storm'].includes(kind)?SCENE_ART.rain:SCENE_ART.day};
 }
 export function nearbyContacts(s){
- const time=s.time,day=s.day||1,contacts=[];
+ const time=s.time,day=s.day||1,contacts=[],team=!!s.role&&s.role!=='gatekeeper',arrived=team?time>=550:s.arrived;
  if(day===1&&time>=510){
   const decision=s.decision;
   const event=s.events?.find(e=>e.id==='EV-21260916-004');
   const finished=event?.entries?.filter(e=>['處置','處理','安排','系統'].includes(e.type)).at(-1)?.time;
-  const departing=!!(decision&&s.standardReceived&&s.outerGate==='closed');
-  const departureStart=finished??570;
+  const departing=team?time>=585:!!(decision&&s.standardReceived&&s.outerGate==='closed');
+  const departureStart=team?585:finished??570;
   if(!departing||time<departureStart+12){
-   const distance=departing?Math.min(200,20+Math.max(0,time-departureStart)*16):s.arrived?18:Math.max(24,200-(time-510)*4.4);
-   const motion=departing?'離開中':s.arrived?'接收區等候':time>=550?'入口外等候':'接近中';
-   const known=!!(s.idChecked||(s.decision==='delegated'&&s.delegateDue===null));
+   const distance=departing?Math.min(200,20+Math.max(0,time-departureStart)*16):arrived?18:Math.max(24,200-(time-510)*4.4);
+   const motion=departing?'離開中':arrived?'接收區等候':time>=550?'入口外等候':'接近中';
+   const known=!!((team&&time>=553)||s.idChecked||(s.decision==='delegated'&&s.delegateDue===null));
    contacts.push({id:'approach-01',people:2,label:known?'預約送貨隊':'兩個人員訊號',distance:Math.round(distance),x:50+distance*.12,y:50-distance*.17,known,motion});
   }
  }
@@ -36,10 +36,10 @@ export const CAMERAS=[
  {id:'canteen',name:'公共餐廳',code:'CAM 02 / COMMON',scene:'canteen',position:'100% 0%',note:'公共餐桌與配給窗口。',map:[103,122]},
  {id:'engineering',name:'工程通道',code:'CAM 03 / SERVICE',scene:'engineering',position:'100% 100%',note:'設備、維修通道與管線。',map:[247,149]},
  {id:'hall',name:'生活區公共走道',code:'CAM 04 / HALL',scene:'engineering',position:'100% 100%',note:'生活區門外公共走道；床位不設鏡頭。',map:[74,53]},
- {id:'isolation',name:'隔離接待室',code:'CAM 05 / INTAKE',scene:'isolation',art:'assets/key-rooms-v06.png',position:'0% 0%',note:'雙門緩衝、通風與隔離接待。區域設定圖，尚未開放走入。',map:[247,213],concept:true},
- {id:'medical',name:'醫療工作室',code:'CAM 06 / MEDICAL',scene:'medical',art:'assets/key-rooms-v06.png',position:'100% 0%',note:'醫療工作桌與用品櫃；不拍攝病床。區域設定圖。',map:[74,213],concept:true},
- {id:'supplies',name:'物資倉儲',code:'CAM 07 / STORES',scene:'supplies',art:'assets/key-rooms-v06.png',position:'0% 100%',note:'濾芯、食物與領用紀錄。區域設定圖，尚未新增管理任務。',map:[74,293],concept:true},
- {id:'power',name:'能源通訊室',code:'CAM 08 / POWER',scene:'power',art:'assets/key-rooms-v06.png',position:'100% 100%',note:'電池、太陽能調節與衛星通訊設備。區域設定圖。',map:[247,293],concept:true}
+ {id:'isolation',name:'隔離接待室',code:'CAM 05 / INTAKE',scene:'isolation',art:'assets/key-rooms-v06.png',position:'0% 0%',note:'雙門緩衝、通風與隔離接待。日間場景示意，可由對應職務進入工作。',map:[247,213],concept:true},
+ {id:'medical',name:'醫療工作室',code:'CAM 06 / MEDICAL',scene:'medical',art:'assets/key-rooms-v06.png',position:'100% 0%',note:'醫療工作桌與用品櫃；不拍攝病床。日間場景示意。',map:[74,213],concept:true},
+ {id:'supplies',name:'物資倉儲',code:'CAM 07 / STORES',scene:'supplies',art:'assets/key-rooms-v06.png',position:'0% 100%',note:'濾芯、食物與領用紀錄。日間場景示意，後勤在此管理物資。',map:[74,293],concept:true},
+ {id:'power',name:'能源通訊室',code:'CAM 08 / POWER',scene:'power',art:'assets/key-rooms-v06.png',position:'100% 100%',note:'電池、太陽能調節與衛星通訊設備。日間場景示意。',map:[247,293],concept:true}
 ];
 export function cameraEnvironment(s,preview='live'){
  const times={dawn:410,day:630,rain:840,dusk:1050,night:1230};

@@ -1,0 +1,16 @@
+{
+  "assets": {
+    "gate-watchroom-v07b.png": {
+      "source": "/Users/ivy/.codex/generated_images/01a18b7c-a141-7e03-a598-6c30de313817/exec-cc12703c-88e9-4abe-b5be-8c869537da31.png",
+      "prompt": "Use case: text-localization precise edit. Edit only the eight little camera-screen timestamp date texts in this exact image: they currently begin 2026-05-14. Set EVERY camera timestamp to exactly 2126-09-16 08:00:00, matching this game's Taiwan2126 chronology. If exact small text is impractical, remove timestamps from the screen corners altogether, preserving all CAM labels. Keep ALL room geometry, camera feeds, lighting, screen layout, desk, hardware, handwritten notes, composition, colors and image quality unchanged. Do not add any shelter name. This is a narrow date correction only.",
+      "tool": "built-in image_gen",
+      "reference": "/Users/ivy/.codex/generated_images/01a18b7c-a141-7e03-a598-6c30de313817/exec-8bde65e4-7c5d-4a14-b880-41eaa6ee47d4.png"
+    },
+    "residential-details-v07b.png": {
+      "source": "/Users/ivy/.codex/generated_images/01a18b7c-a141-7e03-a598-6c30de313817/exec-2586edd2-0bfd-46af-9297-ebaad8688659.png",
+      "prompt": "Use case: text-localization precise edit. Keep this exact 2x2 game detail atlas unchanged except the date at bottom of the lower-left paper filter-maintenance note. Change 2026.08.12 to 2126.09.12, or remove that date if exact text is impractical. Preserve handwritten Traditional Chinese note, all checkboxes and ALL four quadrant composition, objects, materials, lighting, colors, perspective, camera and quality. No other changes, no additional graphics or text. Narrow chronology correction for Taiwan2126 game.",
+      "tool": "built-in image_gen",
+      "reference": "/Users/ivy/.codex/generated_images/01a18b7c-a141-7e03-a598-6c30de313817/exec-c2a9a94e-a00e-4a9c-a392-6649b12853ef.png"
+    }
+  }
+}

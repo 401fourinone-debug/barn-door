@@ -13,7 +13,7 @@ export const GATE_SETTINGS=[
 ];
 function picture(setting){return {...setting,size:setting.size||'200% 200%',mobileSize:setting.size||'auto 200%'};}
 export function gateScene(s,env=environmentAt(s.day||1,s.time)){
- const hasVisitors=s.arrived&&nearbyContacts(s).some(c=>c.id==='approach-01');
+ const hasVisitors=nearbyContacts(s).some(c=>c.id==='approach-01'&&['接收區等候','離開中'].includes(c.motion));
  if(hasVisitors)return {...picture(GATE_SETTINGS.find(x=>x.id==='convoy')),id:'live-visitors'};
  if(env.phase==='night')return {id:'live-night',art:env.art,position:'0% 100%',size:'200% 200%',mobileSize:'auto 200%'};
  if(['rain','storm'].includes(env.kind))return {...picture(GATE_SETTINGS.find(x=>x.id==='typhoon')),id:'live-rain'};
