@@ -35,7 +35,11 @@ export const CAMERAS=[
  {id:'gate',name:'外門接收區',code:'CAM 01 / ACCESS',scene:'gate',position:'0% 100%',note:'外門、接收區與外側山路。',map:[230,57]},
  {id:'canteen',name:'公共餐廳',code:'CAM 02 / COMMON',scene:'canteen',position:'100% 0%',note:'公共餐桌與配給窗口。',map:[103,122]},
  {id:'engineering',name:'工程通道',code:'CAM 03 / SERVICE',scene:'engineering',position:'100% 100%',note:'設備、維修通道與管線。',map:[247,149]},
- {id:'hall',name:'生活區公共走道',code:'CAM 04 / HALL',scene:'engineering',position:'100% 100%',note:'生活區門外公共走道；床位不設鏡頭。',map:[74,53]}
+ {id:'hall',name:'生活區公共走道',code:'CAM 04 / HALL',scene:'engineering',position:'100% 100%',note:'生活區門外公共走道；床位不設鏡頭。',map:[74,53]},
+ {id:'isolation',name:'隔離接待室',code:'CAM 05 / INTAKE',scene:'isolation',art:'assets/key-rooms-v06.png',position:'0% 0%',note:'雙門緩衝、通風與隔離接待。區域設定圖，尚未開放走入。',map:[247,213],concept:true},
+ {id:'medical',name:'醫療工作室',code:'CAM 06 / MEDICAL',scene:'medical',art:'assets/key-rooms-v06.png',position:'100% 0%',note:'醫療工作桌與用品櫃；不拍攝病床。區域設定圖。',map:[74,213],concept:true},
+ {id:'supplies',name:'物資倉儲',code:'CAM 07 / STORES',scene:'supplies',art:'assets/key-rooms-v06.png',position:'0% 100%',note:'濾芯、食物與領用紀錄。區域設定圖，尚未新增管理任務。',map:[74,293],concept:true},
+ {id:'power',name:'能源通訊室',code:'CAM 08 / POWER',scene:'power',art:'assets/key-rooms-v06.png',position:'100% 100%',note:'電池、太陽能調節與衛星通訊設備。區域設定圖。',map:[247,293],concept:true}
 ];
 export function cameraEnvironment(s,preview='live'){
  const times={dawn:410,day:630,rain:840,dusk:1050,night:1230};

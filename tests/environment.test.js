@@ -13,7 +13,7 @@ test('清晨、午後雨天與夜間使用正確時段及不同底圖，素材�
 test('時段預覽只回傳視覺資訊，不改動目前時間、任務與接近訊號',()=>{
  const s={...createState(),time:530},snapshot=structuredClone(s),contacts=nearbyContacts(s);
  assert.equal(cameraEnvironment(s,'night').time,1230);assert.equal(cameraEnvironment(s,'live').time,530);
- assert.deepEqual(s,snapshot);assert.deepEqual(nearbyContacts(s),contacts);assert.equal(CAMERAS.length,4);
+ assert.deepEqual(s,snapshot);assert.deepEqual(nearbyContacts(s),contacts);assert.equal(CAMERAS.length,8);
 });
 test('雷達人員隨遊戲時間接近，但不能從位置提前得知身分或健康',()=>{
  const s=createState();assert.equal(nearbyContacts(s).length,0);
