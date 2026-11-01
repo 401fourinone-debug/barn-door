@@ -1,4 +1,4 @@
-import {EXTRA_EVENTS} from './extra-events.js';
+import {EXTRA_EVENTS} from './extra-events.js?v=09c';
 export const DUTY_EVENTS=[
  {key:'drain',title:'排水口卡了落葉',from:'工程師',text:'外門雨棚的排水口有落葉。現在還沒積水，要先清掉嗎？',choices:[{label:'請工程師清一清',minutes:8,health:1,trust:1,reply:'工程師清好外面的排水口，試過排水正常，室內沒有進水。',actor:'工程師'},{label:'先圍起來，請下一班追蹤',minutes:2,health:-1,trust:0,pending:true,reply:'外側排水口已標示，還沒清理；下一班要安排人手。',actor:'守門人'}]},
  {key:'rest',title:'同事想休息一下',from:'值班同事',text:'「有點頭暈，能找人讓我休息十分鐘嗎？門口不能沒人。」',choices:[{label:'請資深守門人換手，讓他休息',minutes:10,health:0,trust:2,reply:'資深守門人已代班，同事休息後好多了，醫護也知道這件事。',actor:'資深守門人／醫護'},{label:'請醫護先來看，原地等人換手',minutes:6,health:0,trust:1,reply:'醫護已到，代班人員接手後，同事離開崗位休息。',actor:'醫護／代班同事'}]},

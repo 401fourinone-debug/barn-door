@@ -1,7 +1,9 @@
-import {initWorld,updateWorld,dutyPool,workDelay} from './living-world.js';
-import {ROLE_IDS,LOCATION_IDS,roleOf,isOtherRole,roleTasks,roleEventId} from './roles.js';
-import {createInitialWork,assignmentEta} from './initial-work.js';
-import {DUTY_EVENTS} from './duty-events.js';
+import {autoDecision,crewAvailable,crewName,crewById,crewParticipants,EVENT_OWNERS,absolute} from './crew.js?v=09c';
+import {processInvestigation,inspectArea,diagnoseArea,investigationOf} from './investigation.js?v=09c';
+import {initWorld,updateWorld,dutyPool,workDelay} from './living-world.js?v=09c';
+import {ROLE_IDS,LOCATION_IDS,roleOf,isOtherRole,roleTasks,roleEventId} from './roles.js?v=09c';
+import {createInitialWork,assignmentEta} from './initial-work.js?v=09c';
+import {DUTY_EVENTS} from './duty-events.js?v=09c';
 export const VERSION = 1;
 export const DIFFICULTIES = {easy:{name:'容易',threshold:60,initial:87,review:12},normal:{name:'中等',threshold:75,initial:82,review:16},hard:{name:'最難',threshold:90,initial:78,review:24}};
 export const CASE_ID = 'EV-21260916-004';
@@ -207,10 +209,21 @@ function randomDuty(s){s.dutySeed=(Math.imul(s.dutySeed||1,1664525)+1013904223)>
 function scheduleDuty(s,first=false){const at=s.time+(first?20+Math.floor(randomDuty(s)*26):48+Math.floor(randomDuty(s)*33));s.nextIncidentAt=at<=930&&(s.dutyHandled||[]).length<5?at:null;}
 function startStandby(s){if(mainWorkDone(s)&&!s.ended&&!s.standbyStarted){s.standbyStarted=true;s.standbyPaused=false;s.dutyHandled=s.dutyHandled||[];scheduleDuty(s,true);if(s.time<SHIFT_END)s.last='主要工作已安排好。接著繼續待命，時鐘每秒走一分鐘，到下午四點再交班。';}}
 function incidentId(s){return `EV-212609${15+(s.day||1)}-D${String((s.dutyHandled||[]).length+1).padStart(2,'0')}`;}
-function triggerIncident(s){const seen=new Set((s.dutyHandled||[]).map(x=>x.key));const pool=dutyPool(s,DUTY_EVENTS).filter(x=>!seen.has(x.key));if(!pool.length){s.nextIncidentAt=null;return;}const event=pool[Math.floor(randomDuty(s)*pool.length)];const id=incidentId(s);s.activeIncident={key:event.key,id,opened:s.time};s.nextIncidentAt=null;ensureEvent(s,id,event.title,'待命事件');s.events.find(e=>e.id===id).systemKey=event.key;log(s,id,'通知',event.from,event.text);s.last=`${event.from}：${event.title}。時鐘已暫停，先回應這件事。`;}
-function finishDutyJob(s){const job=s.dutyJob,definition=DUTY_EVENTS.find(e=>e.key===job.key),choice=definition.choices[job.choice];log(s,job.id,'回報',choice.actor,choice.reply,job.due);const e=s.events.find(e=>e.id===job.id);e.status=choice.pending?'已安排／待追蹤':'已結案';e.owner=choice.pending?'接班同事':choice.actor;e.closed=choice.pending?null:job.due;e.closedDay=s.day||1;bump(s,choice.health,choice.trust);s.last=choice.reply;s.dutyJob=null;}
-function processDuty(s){processInitialWork(s);processTeamDelivery(s);if(s.ended||!mainWorkDone(s))return;if(s.dutyJob&&s.time>=s.dutyJob.due)finishDutyJob(s);if(!s.dutyJob&&!s.activeIncident&&s.nextIncidentAt!==null&&s.time>=s.nextIncidentAt){if(s.time<=930)triggerIncident(s);else s.nextIncidentAt=null;}}
+export function incidentPlan(s,event,index,ownerId=EVENT_OWNERS[event.key]){const choice=event.choices[index],participants=crewParticipants(choice.actor,ownerId),start=Math.max(absolute(s),...participants.map(id=>crewAvailable(s,id))),minutes=Math.max(1,choice.minutes+workDelay(s,crewById(ownerId)?.domain||'access'));return {ownerId,participants,owner:participants.map(crewName).join('／'),start,minutes,due:start+minutes};}
+function assignIncident(s,incident,index,decisionBy){const def=DUTY_EVENTS.find(e=>e.key===incident.key),choice=def.choices[index],plan=incidentPlan(s,def,index,incident.ownerId||EVENT_OWNERS[incident.key]),event=s.events.find(e=>e.id===incident.id);event.owner=plan.owner;s.dutyHandled.push({key:incident.key,id:incident.id,choice:index,time:s.time,decisionBy,ownerId:plan.ownerId});s.activeIncident=null;
+ if(plan.due>((s.day||1)-1)*1440+SHIFT_END){event.status='已安排／待追蹤';const nextStart=Math.max((s.day||1)*1440+480,...plan.participants.map(id=>crewAvailable(s,id))),nextDue=nextStart+plan.minutes,dueDay=Math.floor(nextDue/1440)+1,due=nextDue%1440;s.inheritedJobs=s.inheritedJobs||[];s.inheritedJobs.push({id:incident.id,key:incident.key,origin:'duty-followup',ownerId:plan.ownerId,participants:plan.participants,start:nextStart,title:def.title,owner:plan.owner,status:'處理中',needsPlayer:false,dueDay,due,progress:'當班人手已滿，工作排在接班後處理，尚未完成。',next:'等接班專業同事處理後回報。',reply:choice.reply,options:[],healthDelta:choice.health,trustDelta:choice.trust});log(s,incident.id,'跨班安排',plan.owner,'負責人仍有工作，本項尚未完成；接班後安排處理並回報。');s.dutyJob=null;s.last='本項排入接班工作，未寫成已完成。';}
+ else{event.status='處理中';s.dutyJob={key:incident.key,id:incident.id,choice:index,...plan,due:plan.due-((s.day||1)-1)*1440,decisionBy};s.last=plan.owner+'已接手，預計 '+timeText(s.dutyJob.due)+' 回報。'+(plan.start>absolute(s)?'先完成手上的工作，再處理這件。':'');}
+ scheduleDuty(s);
+}
+function triggerIncident(s){const seen=new Set((s.dutyHandled||[]).map(x=>x.key));const pool=dutyPool(s,DUTY_EVENTS).filter(x=>!seen.has(x.key));if(!pool.length){s.nextIncidentAt=null;return;}const event=pool[Math.floor(randomDuty(s)*pool.length)],id=incidentId(s),policy=autoDecision(s,event);ensureEvent(s,id,event.title,'待命事件');const e=s.events.find(e=>e.id===id);e.systemKey=event.key;e.owner=policy.owner;log(s,id,'通知',policy.owner,event.text);s.nextIncidentAt=null;
+
+ if(policy.player){s.activeIncident={key:event.key,id,opened:s.time,ownerId:policy.ownerId,reason:policy.reason};log(s,id,'請求協調',policy.owner,s.activeIncident.reason);s.last=policy.owner+'請求協調。先維持安全安排，等你回應。';return;}
+ log(s,id,'系統決策','值勤分工系統 → '+policy.owner,policy.reason+' '+event.choices[policy.choice].label);assignIncident(s,{key:event.key,id,ownerId:policy.ownerId},policy.choice,'auto');}
+
+function finishDutyJob(s){const job=s.dutyJob,definition=DUTY_EVENTS.find(e=>e.key===job.key),choice=definition.choices[job.choice];log(s,job.id,'回報',job.owner||choice.actor,choice.reply,job.due);const e=s.events.find(e=>e.id===job.id);e.status=choice.pending?'已安排／待追蹤':'已結案';e.owner=choice.pending?(job.owner||choice.actor)+'／接班同事':job.owner||choice.actor;e.closed=choice.pending?null:job.due;e.closedDay=s.day||1;bump(s,choice.health,choice.trust);s.last=choice.reply;s.dutyJob=null;}
+function processDuty(s){processInitialWork(s);processTeamDelivery(s);processInvestigation(s);if(s.ended||!mainWorkDone(s))return;if(s.dutyJob&&s.time>=s.dutyJob.due)finishDutyJob(s);if(!s.dutyJob&&!s.activeIncident&&s.nextIncidentAt!==null&&s.time>=s.nextIncidentAt){if(s.time<=930)triggerIncident(s);else s.nextIncidentAt=null;}}
 export function can(s,action){
+ if(['inspectPost','diagnosePost'].includes(action))return s.ended?'本班已交接，可查看紀錄。':!s.signed?'先接下這一班。':s.activeIncident?'先協調目前超出權限的狀況，再進行巡查。':!investigationOf(s)||investigationOf(s).status!=='比對中'?'目前沒有新的紀錄差異待比對。':null;
  if(action==='rest')return !s.ended?'先完成交班，再休息。':s.resting?'已經在休息。':(s.day||1)>=3?'三天試玩已完成。':null;
  if(action==='readBacklog')return s.ended?'本班已結束，可查看但不用重新確認。':null;
  if(action==='assignInherited')return s.ended?'本班已結束。':!s.signed?'先接下這一班，再安排人手。':s.activeIncident?'先回應剛才的狀況。':null;
@@ -230,6 +243,7 @@ export function can(s,action){
 }
 function coreAct(state,action,payload={}){
  const reason=can(state,action);if(reason)return {state,error:reason};
+ if(['inspectPost','diagnosePost'].includes(action)){const s=structuredClone(state);if(action==='diagnosePost'&&!LOCATION_IDS.includes(payload.location))return {state,error:'請選擇已有的工作位置。'};advance(s,2);const error=action==='inspectPost'?inspectArea(s):diagnoseArea(s,payload.location);if(error)return {state,error};processDuty(s);return {state:s,error:null};}
  if(action==='rest'){const s=structuredClone(state);s.resting=true;s.location='dorm';s.time=1230;s.last='20:30。晚餐後回到寢室，夜班已接手。睡前可以看看公共區域，準備好就休息。';processInitialWork(s);return {state:s,error:null};}
  if(action==='move'&&mainWorkDone(state)&&state.time<SHIFT_END){if(!LOCATION_IDS.includes(payload.location))return {state,error:'未知地點。'};const s=structuredClone(state);s.location=payload.location;s.last='換個位置查看。對講機保持聯絡，值勤時鐘不會因切換場景而跳時間。';return {state:s,error:null};}
  if(action==='readBacklog'){const s=structuredClone(state);s.backlogReviewed=true;s.last='已看過上一班留下的工作。接班後先安排待辦，同事正在做的事不用重派。';return {state:s,error:null};}
@@ -243,7 +257,7 @@ function coreAct(state,action,payload={}){
  if(action==='toggleStandby'){const s=structuredClone(state);s.standbyPaused=!s.standbyPaused;s.last=s.standbyPaused?'時鐘已暫停，準備好可以繼續。':'繼續待命，每秒推進遊戲內一分鐘。';return {state:s,error:null};}
  if(action==='respondIncident'){
   const s=structuredClone(state),incident=s.activeIncident,definition=DUTY_EVENTS.find(e=>e.key===incident.key),index=Number(payload.choice),choice=definition?.choices[index];if(!choice)return {state,error:'請選擇一個處理方式。'};
-  log(s,incident.id,'安排','玩家',choice.label);const event=s.events.find(e=>e.id===incident.id);event.owner=choice.actor;event.status='處理中';s.dutyHandled.push({key:incident.key,id:incident.id,choice:index,time:s.time});s.activeIncident=null;s.dutyJob={key:incident.key,id:incident.id,choice:index,due:Math.min(SHIFT_END,s.time+choice.minutes)};scheduleDuty(s);s.last=`已請${choice.actor}處理，大約 ${choice.minutes} 分鐘後回覆。時鐘繼續前進。`;processDuty(s);return {state:s,error:null};
+  log(s,incident.id,'安排','玩家',choice.label);assignIncident(s,incident,index,'player');processDuty(s);return {state:s,error:null};
  }
  const result=missionAct(state,action,payload);if(!result.error){startStandby(result.state);processDuty(result.state);}return result;
 }
@@ -259,7 +273,7 @@ function processInitialWork(s){
  for(const job of s.inheritedJobs||[]){
   const e=s.events.find(e=>e.id===job.id);if(!e)continue;
   if(job.status==='處理中'&&job.due!=null&&now>=((job.dueDay||1)-1)*1440+job.due){
-   job.status='已完成';job.progress=job.reply;job.next='已完成，可查看處理紀錄。';e.status='已結案';e.owner=job.owner;e.closed=job.due;e.closedDay=job.dueDay||1;e.entries.push({id:job.id+'-'+(e.entries.length+1),day:job.dueDay||1,time:job.due,type:'完成回報',actor:job.owner,text:job.reply});s.last=`${job.owner}回報：${job.reply}`;
+   job.status='已完成';if(job.healthDelta!=null)bump(s,job.healthDelta,job.trustDelta||0);job.progress=job.reply;job.next='已完成，可查看處理紀錄。';e.status='已結案';e.owner=job.owner;e.closed=job.due;e.closedDay=job.dueDay||1;e.entries.push({id:job.id+'-'+(e.entries.length+1),day:job.dueDay||1,time:job.due,type:'完成回報',actor:job.owner,text:job.reply});s.last=`${job.owner}回報：${job.reply}`;
   }
   if(job.status==='待安排'&&job.deadline!=null&&now>((job.deadlineDay||1)-1)*1440+job.deadline&&!job.overdue){job.overdue=true;e.entries.push({id:job.id+'-'+(e.entries.length+1),day:s.day||1,time:s.time,type:'提醒',actor:'交班紀錄',text:'超過原訂安排時間，請接班人說明後續；不自動假定設備失效。'});}
  }
@@ -315,6 +329,7 @@ function processTeamDelivery(s){if(!isOtherRole(s)||(s.day||1)!==1||s.time<550)r
 export function act(state,action,payload={}){
  const r=coreAct(state,action,payload);if(r.error)return r;
  const s=r.state;
- if(action==='respondIncident'&&s.dutyJob){const domain=({engineer:'power',medic:'care',logistics:'food',gatekeeper:'access'})[s.role||'gatekeeper'];const delay=workDelay(state,domain);s.dutyJob.due=Math.min(SHIFT_END,Math.max(s.time+1,s.dutyJob.due+delay));if(delay)s.last+=' 前幾次安排讓本職務餘裕改變，本次預計 '+timeText(s.dutyJob.due)+' 回報。';}
- updateWorld(state,s,action,payload);return r;
+ if(action==='nextDay'){s.world=structuredClone(state.world);initWorld(s);s.investigations=structuredClone(state.investigations||[]);s.traceWork=structuredClone(state.traceWork||null);processInvestigation(s);}
+
+ updateWorld(state,s,action,payload,action==='nextDay');return r;
 }

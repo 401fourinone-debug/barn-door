@@ -1,6 +1,7 @@
-import {workDelay} from './living-world.js';
-import {SHIFT_END,mainWorkDone,timeText} from './engine.js';
-import {DUTY_EVENTS} from './duty-events.js';
+import {crewName,EVENT_OWNERS} from './crew.js?v=09c';
+import {workDelay} from './living-world.js?v=09c';
+import {SHIFT_END,mainWorkDone,timeText,incidentPlan} from './engine.js?v=09c';
+import {DUTY_EVENTS} from './duty-events.js?v=09c';
 export function dutyPanel(s,{header,c,b,ui,esc}){
  if(s.activeIncident){incidentPanel(s,{header,c,b,ui,esc});return;}
  header('工作做好後，繼續顧好這一班','ON DUTY / UNTIL 16:00');
@@ -12,5 +13,5 @@ export function incidentPanel(s,{header,c,b,ui,esc}){
  const incident=s.activeIncident,definition=DUTY_EVENTS.find(e=>e.key===incident?.key);
  if(!definition){header('已經安排處理','DUTY UPDATE');c.innerHTML=`<p class="lead">${esc(s.last)}</p>${ui('關閉視窗，繼續值勤','close','primary')}`;return;}
  header(definition.title,'NEW MESSAGE / '+timeText(incident.opened));
- c.innerHTML=`<div class="notice">${esc(definition.from)}傳來消息。<strong>時鐘暫停在 ${timeText(s.time)}。</strong></div><p class="spoken">${esc(definition.text)}</p><p class="lead">你怎麼安排？交給同事後，會等他實際回報，不會立刻算完成。預估時間已考慮本職務目前的工作餘裕。</p><div class="choices">${definition.choices.map((choice,index)=>`<button class="${index===0?'primary':'secondary'}" data-action="respondIncident" data-choice="${index}">${esc(choice.label)}<small>約 ${Math.max(1,choice.minutes+delay)} 分鐘</small></button>`).join('')}</div>${ui('先查看事件紀錄','journal')}`;
+ c.innerHTML=`<div class="notice">${esc(s.events.find(e=>e.id===incident.id)?.owner&&s.events.find(e=>e.id===incident.id).owner!=='玩家'?s.events.find(e=>e.id===incident.id).owner:crewName(incident.ownerId||EVENT_OWNERS[incident.key]))}請求協調。<strong>時鐘暫停在 ${timeText(s.time)}。</strong></div><p class="spoken">${esc(definition.text)}</p>${incident.reason?`<p class="notice">${esc(incident.reason)}</p>`:''}<p class="lead">你怎麼安排？交給同事後，會等他實際回報，不會立刻算完成。預估時間已考慮負責人的工作餘裕；正在忙碌的人會先完成手上的工作，再接這件。</p><div class="choices">${definition.choices.map((choice,index)=>`<button class="${index===0?'primary':'secondary'}" data-action="respondIncident" data-choice="${index}">${esc(choice.label)}<small>工作約 ${incidentPlan(s,definition,index).minutes} 分鐘</small></button>`).join('')}</div>${ui('先查看事件紀錄','journal')}`;
 }

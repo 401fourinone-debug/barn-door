@@ -1,5 +1,5 @@
-import {dutyPanel} from './duty-ui.js';
-import {workflow,can,timeText,dateText,outcome,DIFFICULTIES,mainWorkDone,SHIFT_END} from './engine.js';
+import {dutyPanel} from './duty-ui.js?v=09c';
+import {workflow,can,timeText,dateText,outcome,DIFFICULTIES,mainWorkDone,SHIFT_END} from './engine.js?v=09c';
 
 export function plain(value){let s=String(value??'');for(const [a,b] of [
  ['身分交叉核驗','確認是不是約好的人'],['身分核驗','確認身分'],['核驗碼','確認碼'],['指紋讀取器','指紋機'],['讀取器','指紋機'],['虹膜','眼睛掃描'],['覆核','確認'],['核驗','確認'],['查核','確認'],['留置','暫存'],['委派合格代理','請同事幫忙'],['委派','交給同事'],['代理守門人','幫忙的守門人'],['代理','幫忙的同事'],['授權','同意'],['耗材','用品'],['入庫','收進倉庫'],['驗收','點收'],['承辦','負責'],['陳述','說法'],['口述','說的話'],['處置','安排'],['門位感測器','門的感應器'],['門位','門是否關好'],['互鎖','兩扇門不能一起開'],['快取','儲存的資料'],['通報','通知'],['補註','補充紀錄'],['已結案','已完成'],['結案','完成'],['交班事項','上一班的提醒'],['前往門禁控制室','到守門室'],['通訊器','對講機'],['門禁終端','門口電腦'],['工單','報修紀錄']

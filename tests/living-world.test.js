@@ -24,7 +24,7 @@ test('回報的兩種安排會排出有來源的不同後果，延遲生效並�
  const copy=restoreState(JSON.stringify(b));assert.deepEqual(copy.world.queue,b.world.queue);assert.deepEqual(copy.world.resources,b.world.resources);
 });
 test('舊存檔補上運作狀態，不重播原回報，跨日保留後續與餘裕',()=>{
- let s=caseStart(1);const raw=structuredClone(s);delete raw.world;const old=restoreState(JSON.stringify(raw));assert.ok(old.world);assert.equal(old.world.feed.length,0);s.world.resources.water=71;s.ended=true;s.time=960;const next=step(s,'nextDay');assert.equal(next.day,3);assert.ok(next.world.resources.water<=71);assert.notEqual(next.world.resources.water,80);assert.ok(next.world.seen.length>=s.world.seen.length);
+ let s=caseStart(1);const raw=structuredClone(s);delete raw.world;const old=restoreState(JSON.stringify(raw));assert.ok(old.world);assert.equal(old.world.feed.length,0);s.world.resources.water=71;s.world.queue=s.world.queue.filter(q=>q.domain!=='water');s.ended=true;s.time=960;const next=step(s,'nextDay');assert.equal(next.day,3);assert.equal(next.world.resources.water,71);assert.notEqual(next.world.resources.water,80);assert.ok(next.world.seen.length>=s.world.seen.length);
 });
 test('不同餘裕會改變新狀況估計，已安排工作不會每分鐘被改期',()=>{
  let s=ready('medic');s.world.resources.care=70;const id='INC';s.events=[{id,title:'事件',category:'待命事件',status:'查核中',entries:[],attachments:[]}];s.activeIncident={id,key:'ppe-seal',opened:s.time};const duration=DUTY_EVENTS.find(e=>e.key==='ppe-seal').choices[0].minutes+workDelay(s,'care');s=step(s,'respondIncident',{choice:0});assert.equal(s.dutyJob.due-s.time,duration);const due=s.dutyJob.due;s=step(s,'tick');assert.equal(s.dutyJob.due,due);

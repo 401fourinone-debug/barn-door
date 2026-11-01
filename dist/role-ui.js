@@ -1,5 +1,5 @@
-import {roleOf,roleTasks,roleEventId} from './roles.js';
-import {can,timeText,outcome} from './engine.js';
+import {roleOf,roleTasks,roleEventId} from './roles.js?v=09c';
+import {can,timeText,outcome} from './engine.js?v=09c';
 const names={dorm:'寢室',canteen:'餐廳',gate:'守門室',engineering:'工程區',medical:'醫療工作室',supplies:'物資倉儲',isolation:'隔離接待室',power:'能源通訊室'};
 const move=(location,label)=>`<button class="primary" data-move="${location}">${label||'前往'+names[location]+' →'}</button>`;
 export function rolePanel(panel,s,{header,c,b,ui,esc}){
