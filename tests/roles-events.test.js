@@ -27,9 +27,9 @@ test('舊存檔預設守門身分；新醫療與倉儲地點能正確還原',()=
  const old=createState();delete old.role;delete old.roleStep;assert.equal(restoreState(JSON.stringify(old)).role,'gatekeeper');
  for(const [role,location] of [['medic','medical'],['logistics','supplies'],['engineer','power']]){const s=restoreState(JSON.stringify({...createState('normal',3,role),location}));assert.equal(s.role,role);assert.equal(s.location,location);}
 });
-test('十個新事件加入十六事件池，多個固定新局種子可抽到全部種類',()=>{
+test('十個新事件加入十六事件池，不同職務的固定新局種子可合計抽到全部種類',()=>{
  assert.equal(EXTRA_EVENTS.length,10);assert.equal(DUTY_EVENTS.length,16);assert.equal(new Set(DUTY_EVENTS.map(x=>x.key)).size,16);
- const seen=new Set();for(let seed=1;seed<=160;seed++){let s=dutyReady(seed);while(!s.activeIncident)s=step(s,'tick');seen.add(s.activeIncident.key);}assert.equal(seen.size,16);
+ const seen=new Set();for(const role of ['gatekeeper','engineer','medic','logistics'])for(let seed=1;seed<=160;seed++){let s={...dutyReady(seed),role};while(!s.activeIncident)s=step(s,'tick');seen.add(s.activeIncident.key);}assert.equal(seen.size,16);
 });
 test('每個新事件的兩種安排都等回報才結案或保留下一班責任',()=>{
  for(const event of EXTRA_EVENTS)for(const choice of [0,1]){const id='EV-TEST';let s={...dutyReady(),standbyStarted:true,activeIncident:{key:event.key,id,opened:530},events:[{id,title:event.title,category:'待命事件',systemKey:event.key,status:'查核中',owner:event.from,entries:[],attachments:[],opened:530,openedDay:2,closed:null}]};s=step(s,'respondIncident',{choice});assert.equal(s.events[0].status,'處理中');const due=s.dutyJob.due;s.nextIncidentAt=null;while(s.time<due)s=step(s,'tick');assert.equal(s.dutyJob,null);assert.equal(s.events[0].status,event.choices[choice].pending?'已安排／待追蹤':'已結案');assert.equal(s.events[0].entries.at(-1).time,due);assert.equal(s.events[0].entries.at(-1).actor,event.choices[choice].actor);}
