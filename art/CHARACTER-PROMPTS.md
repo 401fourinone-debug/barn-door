@@ -28,11 +28,15 @@
 | Wren | 可用；油污、工具背帶、頸上頭燈都有 |
 | Pulse | 可用；圓眼鏡、聽診器、毛衣 |
 | Ledger | 可用；低髮髻、耳後鉛筆、夾板 |
-| Echo | 年紀對了，但看起來偏男性，中性感不足，可能要再調 |
+| Echo | 第二版（2026-11-05 重做）：中性感明顯增加；看起來略年輕、背景多了建築，可接受 |
 | Vela | 可用；溫和的半笑、針織外套 |
 | Anchor | 可用；威嚴、深色外套 |
 | Grid | 可用；眼鏡反光、平板 |
-| Moss | 可用，但看起來比 38 歲老一些 |
+| Moss | 第二版（2026-11-05 重做）：年紀約 38 歲，臉上有泥土、捧幼苗，可用 |
 | Patch | 第一次被 Firefly 擋下（提示詞含「19 歲」與 surveillance），改成「約 20 歲、網路與電腦技術員」後成功 |
 | Null | 可用；齊下巴灰髮、舊資料夾 |
 | Mira | 可用；白色捲髮、花背心、笑容 |
+
+## 重做提示詞（2026-11-05）
+- Echo：bust portrait of a gender-ambiguous Taiwanese person around 32 years old, neither clearly male nor female, soft yet angular androgynous face, smooth jawline, no facial hair, slim build, field communications scout: short asymmetric black hair with a longer side-swept fringe, goggles pushed up on the forehead, weatherproof jacket with straps, a small antenna radio on the shoulder, faint lines around curious alert eyes
+- Moss：bust portrait of a Taiwanese woman in her late thirties, youthful smooth face with only very faint lines, head of hydroponic farming: long black hair loosely tied back with a cloth band, a few loose strands, quiet patient eyes, a small soil smudge on her cheek, rolled-up sleeves, a green apron, a small leafy seedling in her hands
