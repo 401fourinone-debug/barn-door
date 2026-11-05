@@ -1,6 +1,6 @@
-import {crewName,crewAvailable} from './crew.js?v=10b';
-import {ROLE_IDS,ROLES} from './roles.js?v=10b';
-import {dateCode} from './calendar.js?v=10b';
+import {crewName,crewAvailable} from './crew.js?v=10c';
+import {ROLE_IDS,ROLES} from './roles.js?v=10c';
+import {dateCode} from './calendar.js?v=10c';
 export const RESOURCE_NAMES={power:'備援電力',water:'可用淨水',food:'可發物資',care:'照護餘裕',access:'接待餘裕',signal:'通訊餘裕'};
 export const ROLE_POOLS={gatekeeper:['radio','rest','motor','unbooked-visitor','outside-dog','uplink-noise'],engineer:['drain','motor','water-reading','battery-warm','camera-link','uplink-noise'],medic:['rest','water-reading','ppe-seal','sleep-distress','unbooked-visitor','camera-link'],logistics:['meal','parcel','cold-store','ration-argument','outside-dog','radio']};
 const domains={drain:'water',rest:'care',radio:'signal',meal:'food',motor:'access',parcel:'food','cold-store':'food','water-reading':'water','camera-link':'signal','battery-warm':'power','unbooked-visitor':'access','outside-dog':'care','ppe-seal':'care','sleep-distress':'care','ration-argument':'food','uplink-noise':'signal'};

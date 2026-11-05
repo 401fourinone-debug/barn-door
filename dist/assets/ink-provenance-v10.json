@@ -1,0 +1,14 @@
+{
+  "style": "墨線漫畫（comic book / graphic novel ink）",
+  "generator": "Adobe Firefly Image 5（網頁版，使用者帳號）",
+  "generated": "2026-11-04 至 2026-11-05",
+  "prompts": "art/STYLE-TEST-PROMPTS.md、art/CHARACTER-PROMPTS.md",
+  "originals": "art/source/（PNG 原檔，存在雲端硬碟，不進 git）",
+  "processing": "縮成 320px（肖像）或 1600／1200px 寬（場景、物品），轉 WebP。",
+  "files": {
+    "portraits/*.webp": "12 位核心角色，檔名是角色草案代號；目前遊戲只用 P01–P06（bolt、wren、pulse、ledger、echo、vela）。",
+    "ink/gate-visitor-night.webp": "守門櫃檯越肩視角，夜晚，來訪者貼窗（A5）。",
+    "ink/gate-visitor-day.webp": "同一張以 Firefly 編輯改成白天。",
+    "ink/inspection-tray.webp": "俯視檢查托盤物品表（D1），留給階段四的守門畫面。"
+  }
+}

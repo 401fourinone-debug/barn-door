@@ -1,4 +1,4 @@
-import {dateCode} from './calendar.js?v=10b';
+import {dateCode} from './calendar.js?v=10c';
 export const ROLE_IDS=['gatekeeper','engineer','medic','logistics'];
 export const LOCATION_IDS=['dorm','canteen','gate','engineering','medical','supplies','isolation','power'];
 export const ROLES={

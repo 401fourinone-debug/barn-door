@@ -1,4 +1,5 @@
-import {environmentAt,cameraEnvironment,nearbyContacts} from './environment.js?v=10b';
+import {environmentAt,cameraEnvironment,nearbyContacts} from './environment.js?v=10c';
+export const INK_GATE={day:'assets/ink/gate-visitor-day.webp',night:'assets/ink/gate-visitor-night.webp'};
 const people='assets/gate-people-v06.png',outside='assets/gate-outside-v06.png';
 export const GATE_SETTINGS=[
  {id:'empty',name:'平常待命 · 沒有來訪',art:'assets/gate-empty-v06.png',position:'center',size:'cover',time:630,note:'入口平常的樣子。沒有因為你看過別的設定圖，就讓人憑空出現。'},
@@ -14,7 +15,8 @@ export const GATE_SETTINGS=[
 function picture(setting){return {...setting,size:setting.size||'200% 200%',mobileSize:setting.size||'auto 200%'};}
 export function gateScene(s,env=environmentAt(s.day||1,s.time)){
  const hasVisitors=nearbyContacts(s).some(c=>c.id==='approach-01'&&['接收區等候','離開中'].includes(c.motion));
- if(hasVisitors)return {...picture(GATE_SETTINGS.find(x=>x.id==='convoy')),id:'live-visitors'};
+ // 墨線漫畫版：來訪者在窗口時，用越肩視角的守門櫃檯；日夜由同一張基準圖編輯而來。
+ if(hasVisitors)return {id:'live-visitors',art:env.phase==='night'||env.phase==='dusk'?INK_GATE.night:INK_GATE.day,position:'center',size:'cover',mobileSize:'cover'};
  if(env.phase==='night')return {id:'live-night',art:env.art,position:'0% 100%',size:'200% 200%',mobileSize:'auto 200%'};
  if(['rain','storm'].includes(env.kind))return {...picture(GATE_SETTINGS.find(x=>x.id==='typhoon')),id:'live-rain'};
  return {...picture(GATE_SETTINGS[0]),id:'live-empty'};

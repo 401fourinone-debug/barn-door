@@ -1,7 +1,7 @@
-import {crewName,EVENT_OWNERS} from './crew.js?v=10b';
-import {workDelay} from './living-world.js?v=10b';
-import {SHIFT_END,mainWorkDone,timeText,incidentPlan} from './engine.js?v=10b';
-import {DUTY_EVENTS} from './duty-events.js?v=10b';
+import {crewName,EVENT_OWNERS} from './crew.js?v=10c';
+import {workDelay} from './living-world.js?v=10c';
+import {SHIFT_END,mainWorkDone,timeText,incidentPlan} from './engine.js?v=10c';
+import {DUTY_EVENTS} from './duty-events.js?v=10c';
 export function dutyPanel(s,{header,c,b,ui,esc}){
  if(s.activeIncident){incidentPanel(s,{header,c,b,ui,esc});return;}
  header('工作做好後，繼續顧好這一班','ON DUTY / UNTIL 16:00');

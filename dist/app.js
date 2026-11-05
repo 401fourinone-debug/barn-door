@@ -1,20 +1,21 @@
-import {crewStrip,crewPanel,inspectionPanel} from './crew-ui.js?v=10b';
-import {crewPosts} from './crew.js?v=10b';
-import {sceneArt} from './living-world.js?v=10b';
-import {renderComms,effectsPanel,sceneLabel} from './comms-ui.js?v=10b';
-import {createAudio,hasRadioReport} from './ambient-audio.js?v=10b';
-import {detailsPanel} from './details-ui.js?v=10b';
-import {ROLES,ROLE_IDS,roleOf,isOtherRole} from './roles.js?v=10b';
-import {rolePanel} from './role-ui.js?v=10b';
-import {gateScene} from './key-scenes.js?v=10b';
-import {environmentAt,nearbyContacts} from './environment.js?v=10b';
-import {radarHud,cameraPanel,cameraWallPanel,monitorWall,cameraStatus} from './surveillance-ui.js?v=10b';
-import {workboard} from './workboard-ui.js?v=10b';
-import {dutyPanel,incidentPanel} from './duty-ui.js?v=10b';
-import {createClock} from './duty-clock.js?v=10b';
-import {plain,sceneActions,briefing,terminal,handover,results,supportPanel} from './flow-ui.js?v=10b';
-import {exportSave,parseSave,importError} from './save-file.js?v=10b';
-import {createState,act,can,objective,outcome,timeText,restoreState,DIFFICULTIES,CASE_ID,ROUTINE_ID,workflow,dateText,mainWorkDone,SHIFT_END} from './engine.js?v=10b';
+import {crewStrip,crewPanel,inspectionPanel} from './crew-ui.js?v=10c';
+import {monthDay} from './calendar.js?v=10c';
+import {crewPosts} from './crew.js?v=10c';
+import {sceneArt} from './living-world.js?v=10c';
+import {renderComms,effectsPanel,sceneLabel} from './comms-ui.js?v=10c';
+import {createAudio,hasRadioReport} from './ambient-audio.js?v=10c';
+import {detailsPanel} from './details-ui.js?v=10c';
+import {ROLES,ROLE_IDS,roleOf,isOtherRole} from './roles.js?v=10c';
+import {rolePanel} from './role-ui.js?v=10c';
+import {gateScene} from './key-scenes.js?v=10c';
+import {environmentAt,nearbyContacts} from './environment.js?v=10c';
+import {radarHud,cameraPanel,cameraWallPanel,monitorWall,cameraStatus} from './surveillance-ui.js?v=10c';
+import {workboard} from './workboard-ui.js?v=10c';
+import {dutyPanel,incidentPanel} from './duty-ui.js?v=10c';
+import {createClock} from './duty-clock.js?v=10c';
+import {plain,sceneActions,briefing,terminal,handover,results,supportPanel} from './flow-ui.js?v=10c';
+import {exportSave,parseSave,importError} from './save-file.js?v=10c';
+import {createState,act,can,objective,outcome,timeText,restoreState,DIFFICULTIES,CASE_ID,ROUTINE_ID,workflow,dateText,mainWorkDone,SHIFT_END} from './engine.js?v=10c';
 
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 const SAVE='barn-door-first-shift-v1', SETTINGS='barn-door-settings-v1';
@@ -88,11 +89,11 @@ function renderPanel(){const c=$('#dialog-content');const previous=document.acti
 }
 function renderRoster(c){header('誰在做什麼','PEOPLE / DUTIES');c.innerHTML=crewStrip(state,esc)+`<p class="monitor-note">以上沿用六人角色提案。點人物看所在位置、目前工作與原始回報。</p><p class="lead">這裡只看分工。今天要做的事，請看「上一班的提醒」。</p><table class="roster-table"><thead><tr><th>工作</th><th>今天由誰負責</th><th>可以幫你什麼</th></tr></thead><tbody><tr><td>守門</td><td>${state.role==='gatekeeper'?'你／':''}資深守門人</td><td>接待、顧門、代班</td></tr><tr><td>修理</td><td>${state.role==='engineer'?'你／':''}工程師</td><td>修機器、檢查排水</td></tr><tr><td>醫療</td><td>${state.role==='medic'?'你／':''}醫護</td><td>確認醫療用品</td></tr><tr><td>物資</td><td>${state.role==='logistics'?'你／':''}後勤</td><td>點貨、保管箱子</td></tr></tbody></table><div class="dialog-actions">${ui('看今天的上班提醒','briefing','primary')}</div><details class="device-details"><summary>下個月怎麼分工（先記草稿）</summary><p class="lead">這不影響今天的工作，月底再討論。</p>${[['gate','守門',['資深守門人','玩家','玩家＋代理輪班']],['engineering','修理',['工程師','工程師＋培訓代理']],['medical','醫療',['醫療負責人','醫療負責人＋培訓代理']],['logistics','物資',['後勤人員','後勤人員＋培訓代理']]].map(([key,label,options])=>`<div class="setting-row"><label for="draft-${key}">${label}</label><select id="draft-${key}" class="field" data-draft="${key}">${options.map(v=>`<option value="${esc(v)}" ${state.rosterDraft[key]===v?'selected':''}>${esc(v)}</option>`).join('')}</select></div>`).join('')}</details>`;}
 function renderTerminal(c){if(isOtherRole(state)){rolePanel('work',state,{header,c,b,ui,esc});return;}terminal(state,{header,c,b,ui,esc,actionItem});}
-function timeline(e){return `<div class="timeline">${e.entries.map(row=>`<article class="log-entry"><time>9/${15+(row.day??1)}<br>${timeText(row.time)}</time><div><header>${esc(row.type)} · ${esc(row.actor)}</header><p>${esc(row.text)}</p></div></article>`).join('')}</div>`;}
+function timeline(e){return `<div class="timeline">${e.entries.map(row=>`<article class="log-entry"><time>${monthDay(row.day??1)}<br>${timeText(row.time)}</time><div><header>${esc(row.type)} · ${esc(row.actor)}</header><p>${esc(row.text)}</p></div></article>`).join('')}</div>`;}
 function renderJournal(c){header('事件簿','EVENT REGISTER / AUDIT TRAIL');
- if(selectedEvent){const e=state.events.find(e=>e.id===selectedEvent);if(!e){selectedEvent=null;return renderJournal(c);}c.innerHTML=`<button class="quiet back" data-event="back">← 返回事件列表</button><div class="terminal-meta"><span>${esc(e.id)}</span><span>${esc(e.category)}</span><span class="status-tag amber">${esc(e.status)}</span></div><h3 style="font-size:22px;font-weight:500;margin:8px 0">${esc(e.title)}</h3><div class="notice">承辦：<strong>${esc(e.owner)}</strong> · 通報：9/${15+(e.openedDay??1)} ${timeText(e.opened)} · ${e.closed?'結案：9/'+(15+(e.closedDay??e.openedDay??1))+' '+timeText(e.closed):'尚未結案'}<br>經過 ${Math.max(0,((e.closedDay??(e.closed?e.openedDay:state.day)??1)-(e.openedDay??1))*1440+(e.closed??state.time)-e.opened)} 分鐘。此為事件歷時，非個人工時。既有紀錄不可無痕修改。</div><h3 class="section-title">證據與來源</h3>${e.attachments.length?e.attachments.map(a=>`<details class="evidence"><summary>${esc(a.id)} · ${esc(a.title)}</summary><p>來源：${esc(a.source)} · ${timeText(a.time)}</p><p>${esc(a.content)}</p></details>`).join(''):'<p class="lead">尚無獨立附件，請查看下方工作紀錄。</p>'}<h3 class="section-title">處理時間線</h3>${timeline(e)}${!state.ended?`<form class="note-form" id="note-form"><label for="event-note" hidden>追加事件補註</label><textarea id="event-note" class="field" placeholder="補充觀察或更正說明；原紀錄會保留。" maxlength="500" required aria-label="追加事件補註"></textarea><button class="secondary" type="submit">追加補註</button></form>`:'<div class="notice">本班已結束，紀錄目前為唯讀。</div>'}<button class="secondary" data-export="session">下載進度備份</button>`;return;}
+ if(selectedEvent){const e=state.events.find(e=>e.id===selectedEvent);if(!e){selectedEvent=null;return renderJournal(c);}c.innerHTML=`<button class="quiet back" data-event="back">← 返回事件列表</button><div class="terminal-meta"><span>${esc(e.id)}</span><span>${esc(e.category)}</span><span class="status-tag amber">${esc(e.status)}</span></div><h3 style="font-size:22px;font-weight:500;margin:8px 0">${esc(e.title)}</h3><div class="notice">承辦：<strong>${esc(e.owner)}</strong> · 通報：${monthDay(e.openedDay??1)} ${timeText(e.opened)} · ${e.closed?'結案：'+monthDay(e.closedDay??e.openedDay??1)+' '+timeText(e.closed):'尚未結案'}<br>經過 ${Math.max(0,((e.closedDay??(e.closed?e.openedDay:state.day)??1)-(e.openedDay??1))*1440+(e.closed??state.time)-e.opened)} 分鐘。此為事件歷時，非個人工時。既有紀錄不可無痕修改。</div><h3 class="section-title">證據與來源</h3>${e.attachments.length?e.attachments.map(a=>`<details class="evidence"><summary>${esc(a.id)} · ${esc(a.title)}</summary><p>來源：${esc(a.source)} · ${timeText(a.time)}</p><p>${esc(a.content)}</p></details>`).join(''):'<p class="lead">尚無獨立附件，請查看下方工作紀錄。</p>'}<h3 class="section-title">處理時間線</h3>${timeline(e)}${!state.ended?`<form class="note-form" id="note-form"><label for="event-note" hidden>追加事件補註</label><textarea id="event-note" class="field" placeholder="補充觀察或更正說明；原紀錄會保留。" maxlength="500" required aria-label="追加事件補註"></textarea><button class="secondary" type="submit">追加補註</button></form>`:'<div class="notice">本班已結束，紀錄目前為唯讀。</div>'}<button class="secondary" data-export="session">下載進度備份</button>`;return;}
  c.innerHTML=`<p class="lead">系統事實、人物陳述與處置分開記錄。每一筆都有時間與操作者；補註只追加，不刪除歷史。</p><div class="journal-tools"><input id="event-search" class="field" type="search" placeholder="搜尋事件、人員、時間或紀錄內容" aria-label="搜尋事件"><select id="event-filter" class="field" aria-label="事件狀態篩選"><option value="all">全部狀態</option><option value="open">尚待處理</option><option value="closed">已結案</option></select></div><div id="event-results" class="event-list"></div><div class="dialog-actions"><button class="secondary" data-export="session">下載進度備份</button></div>`;filterJournal();}
-function filterJournal(){const q=($('#event-search')?.value||'').toLowerCase(),f=$('#event-filter')?.value||'all';const events=state.events.filter(e=>(JSON.stringify(e)+' '+e.entries.map(r=>timeText(r.time)+' 9/'+(15+(r.day??1))).join(' ')).toLowerCase().includes(q)&&(f==='all'||f==='closed'&&e.status==='已結案'||f==='open'&&e.status!=='已結案'));$('#event-results').innerHTML=events.length?events.map(e=>`<button class="event-row" data-event="${esc(e.id)}"><div><small>${esc(e.id)} · 9/${15+(e.openedDay??1)} ${timeText(e.opened)}</small><span class="status-tag ${e.status==='已結案'?'':'amber'}">${esc(e.status)}</span></div><h3>${esc(e.title)}</h3><small>承辦：${esc(e.owner)} · ${e.entries.length} 筆紀錄 · ${e.attachments.length} 份附件</small></button>`).join(''):'<p class="empty">沒有符合的事件。接班後會建立第一筆設備紀錄。</p>';}
+function filterJournal(){const q=($('#event-search')?.value||'').toLowerCase(),f=$('#event-filter')?.value||'all';const events=state.events.filter(e=>(JSON.stringify(e)+' '+e.entries.map(r=>timeText(r.time)+' '+monthDay(r.day??1)).join(' ')).toLowerCase().includes(q)&&(f==='all'||f==='closed'&&e.status==='已結案'||f==='open'&&e.status!=='已結案'));$('#event-results').innerHTML=events.length?events.map(e=>`<button class="event-row" data-event="${esc(e.id)}"><div><small>${esc(e.id)} · ${monthDay(e.openedDay??1)} ${timeText(e.opened)}</small><span class="status-tag ${e.status==='已結案'?'':'amber'}">${esc(e.status)}</span></div><h3>${esc(e.title)}</h3><small>承辦：${esc(e.owner)} · ${e.entries.length} 筆紀錄 · ${e.attachments.length} 份附件</small></button>`).join(''):'<p class="empty">沒有符合的事件。接班後會建立第一筆設備紀錄。</p>';}
 function renderHandover(c){if(isOtherRole(state)){rolePanel('handover',state,{header,c,b,ui,esc});return;}handover(state,{header,c,b,ui,esc});}
 function renderResult(c){if(isOtherRole(state)){rolePanel('result',state,{header,c,b,ui,esc});return;}results(state,{header,c,b,ui,esc});}
 function startGame(restore=false){const previous=restore?saved():null;environmentKey='';radarKey='';wallKey='';commsKey='';crewKey='';state=previous||createState($('input[name=difficulty]:checked')?.value||'normal',undefined,$('input[name=player-role]:checked')?.value||'gatekeeper');started=true;$('#landing').hidden=true;$('#game').hidden=false;closePanel();render();save();audio.resume();if(state.ended&&!state.resting)openPanel('result');}

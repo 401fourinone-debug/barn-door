@@ -1,6 +1,6 @@
 // 備份檔：只能匯出／匯入，而且匯入的進度不能比目前存檔早（避免回到過去重選）。
-import {restoreState,VERSION} from './engine.js?v=10b';
-import {dateText} from './calendar.js?v=10b';
+import {restoreState,VERSION} from './engine.js?v=10c';
+import {dateText} from './calendar.js?v=10c';
 export const SAVE_FORMAT='barn-door-save';
 export const progressOf=s=>((s.day||1)-1)*1440+(s.time||0);
 export function exportSave(state,now=new Date()){

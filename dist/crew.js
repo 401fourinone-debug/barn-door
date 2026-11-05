@@ -1,4 +1,7 @@
 // Stable individuals from the six-person exploration board. Names remain unassigned.
+// 墨線漫畫肖像（2026-11-05）：檔名用角色草案的代號，遊戲內名稱等階段三再換。
+export const PORTRAITS={P01:'bolt',P02:'wren',P03:'pulse',P04:'ledger',P05:'echo',P06:'vela'};
+export const portraitArt=id=>PORTRAITS[id]?`assets/portraits/${PORTRAITS[id]}.webp`:null;
 export const CREW=[
  {id:'P01',label:'守門人',post:'gate',position:'守門控制室',x:'7%',skill:'門禁、接待、代班',aliases:/守門|門口|代理/,domain:'access'},
  {id:'P02',label:'工程師',post:'engineering',position:'工程維護區',x:'26%',skill:'供電、淨水、門機',aliases:/工程|技師|能源/,domain:'power'},

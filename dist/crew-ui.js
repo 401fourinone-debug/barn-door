@@ -1,8 +1,9 @@
-import {CREW,crewPosts,crewById,crewName} from './crew.js?v=10b';
-import {investigationOf} from './investigation.js?v=10b';
+import {CREW,crewPosts,crewById,crewName,portraitArt} from './crew.js?v=10c';
+import {dateOf} from './calendar.js?v=10c';
+import {investigationOf} from './investigation.js?v=10c';
 const names={dorm:'寢室',canteen:'餐廳',gate:'門禁',engineering:'工程',medical:'醫療',supplies:'倉儲',isolation:'隔離',power:'能源通訊'};
-const tm=n=>`9/${16+Math.floor(n/1440)} ${String(Math.floor(n%1440/60)).padStart(2,'0')}:${String(n%60).padStart(2,'0')}`;
-const portrait=p=>`<span class="crew-portrait" role="img" aria-label="${p.label}角色提案" style="--crew-x:${p.x};--crew-y:${p.y||'12%'}"></span>`;
+const tm=n=>{const d=dateOf(Math.floor(n/1440)+1);return `${d.month}/${d.date} ${String(Math.floor(n%1440/60)).padStart(2,'0')}:${String(n%60).padStart(2,'0')}`;};
+const portrait=p=>{const art=portraitArt(p.id);return `<span class="crew-portrait${art?' ink':''}" role="img" aria-label="${p.label}肖像" style="${art?`background-image:url('${art}')`:`--crew-x:${p.x};--crew-y:${p.y||'12%'}`}"></span>`;};
 export function crewStrip(s,esc){const people=crewPosts(s),q=investigationOf(s);return `<div class="crew-strip-head"><span>當班人員 · 你在${names[s.location]}</span><div><button class="quiet" data-ui="investigation">巡查對照${q&&q.status!=='已完成'?' · 有紀錄待比對':''}</button><button class="quiet" data-ui="roster">完整人物表</button></div></div><div class="crew-lineup">${people.map(p=>`<button class="crew-person" data-crew="${p.id}" aria-label="查看${p.label}${p.id}，${names[p.location]}，${p.status}">${portrait(p)}<span><strong>${p.label} <small>${p.id}</small></strong><span>${names[p.location]} · ${p.status}</span><small>${esc(p.task)}</small></span></button>`).join('')}</div>`;}
 export function crewPanel(s,{header,c,esc},id){const p=crewPosts(s).find(p=>p.id===id)||crewPosts(s)[0];header(p.label+' '+p.id,'CREW / POST');c.innerHTML=`<div class="crew-profile">${portrait(p)}<div><h3>${p.label} ${p.id}</h3><p>現在位置：${names[p.location]} · ${p.status}</p><p>可負責：${p.skill}</p></div></div><div class="notice">目前工作：${esc(p.task)}${p.due!=null?'<br>預計回報：'+tm(p.due):''}</div><p class="lead">一般狀況由對應人員依既有分工判斷。工作餘裕不足時會先採安全安排；需要跨職務協調時才請你介入。不是每則回報都要由你選一次。</p>${p.eventId?`<button class="secondary" data-open-event="${esc(p.eventId)}">查看這件工作的原紀錄</button>`:''}<button class="secondary" data-move="${p.location}">前往${names[p.location]}</button><p class="monitor-note">沿用第一階段六人角色提案，暫以職務與人員代號稱呼。位置代表分工與工作進度，背景圖不是即時人物動作。</p>`;}
 export function inspectionPanel(s,{header,c,b,esc}){header('先看線索，再指出問題','OBSERVE / COMPARE');const q=investigationOf(s);if(!q){c.innerHTML='<p class="lead">目前沒有新的來源差異。各區人員照常工作，留意對講機與工作紀錄；沒有消息也不代表每台設備都經過你查過。</p>';return;}

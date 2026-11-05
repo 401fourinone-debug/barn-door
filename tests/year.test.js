@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {createState,act,can,workflow,restoreState,VERSION} from '../dist/engine.js';
-import {dateText,dateCode,weekdayText,seasonOf,isMonthEnd,YEAR_DAYS} from '../dist/calendar.js';
+import {dateText,dateCode,weekdayText,seasonOf,isMonthEnd,monthDay,YEAR_DAYS} from '../dist/calendar.js';
 import {exportSave,parseSave,importError} from '../dist/save-file.js';
 
 function go(s,a,p){const r=act(s,a,p);assert.equal(r.error,null,`day${s.day} ${a}: ${r.error}`);return r.state;}
@@ -38,6 +38,7 @@ function playDay(s){
 test('日曆：第 1 天 2126-09-16，第 365 天 2127-09-15',()=>{
  assert.equal(dateText(1),'2126.09.16');assert.equal(dateCode(16),'21261001');assert.equal(dateText(YEAR_DAYS),'2127.09.15');
  assert.equal(weekdayText(1),'週一');assert.equal(seasonOf(1),'autumn');assert.equal(seasonOf(120),'winter');assert.equal(seasonOf(200),'spring');assert.equal(seasonOf(300),'summer');
+ assert.equal(monthDay(0),'9/15');assert.equal(monthDay(16),'10/1');assert.equal(monthDay(YEAR_DAYS),'9/15');
  assert.ok(isMonthEnd(15));assert.ok(!isMonthEnd(14));
 });
 

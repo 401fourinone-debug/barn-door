@@ -122,3 +122,6 @@
 .hotspots{--hotspot-max-left:calc(100% - 616px)}
 @media(min-width:1500px){.hotspots{--hotspot-max-left:calc(100% - 626px - 5vw)}}
 @media(max-width:1050px){.hotspots{display:none}.scene-shortcuts{display:flex}.is-monitor-room .scene-shortcuts{display:none}}
+
+/* 墨線漫畫肖像（v1.0）：每人一張，不再用六人拼圖。 */
+.crew-portrait.ink{background-size:cover;background-position:center 22%;background-repeat:no-repeat}
