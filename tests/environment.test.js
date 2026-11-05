@@ -41,5 +41,5 @@ test('夜間休息必須先交班，保留紀錄且讀檔後可繼續隔天',()=
  let s=createState();assert.ok(can(s,'rest'));s={...s,ended:true,time:960};const ids=s.events.map(e=>e.id);
  const night=act(s,'rest');assert.equal(night.error,null);assert.equal(night.state.time,1230);assert.equal(night.state.location,'dorm');assert.equal(night.state.resting,true);assert.deepEqual(night.state.events.filter(e=>e.category!=='庇護所運作').map(e=>e.id),ids);
  const restored=restoreState(JSON.stringify(night.state));assert.equal(restored.resting,true);assert.ok(can(restored,'rest'));
- const next=act(restored,'nextDay');assert.equal(next.error,null);assert.equal(next.state.day,2);assert.equal(next.state.time,410);assert.ok(!next.state.resting);assert.ok(can({...s,day:3},'rest'));
+ const next=act(restored,'nextDay');assert.equal(next.error,null);assert.equal(next.state.day,2);assert.equal(next.state.time,410);assert.ok(!next.state.resting);assert.equal(can({...s,day:3},'rest'),null);assert.ok(can({...s,day:365},'rest'));
 });

@@ -1,5 +1,5 @@
-import {CREW,crewPosts,crewById,crewName} from './crew.js?v=09c';
-import {investigationOf} from './investigation.js?v=09c';
+import {CREW,crewPosts,crewById,crewName} from './crew.js?v=10b';
+import {investigationOf} from './investigation.js?v=10b';
 const names={dorm:'寢室',canteen:'餐廳',gate:'門禁',engineering:'工程',medical:'醫療',supplies:'倉儲',isolation:'隔離',power:'能源通訊'};
 const tm=n=>`9/${16+Math.floor(n/1440)} ${String(Math.floor(n%1440/60)).padStart(2,'0')}:${String(n%60).padStart(2,'0')}`;
 const portrait=p=>`<span class="crew-portrait" role="img" aria-label="${p.label}角色提案" style="--crew-x:${p.x};--crew-y:${p.y||'12%'}"></span>`;

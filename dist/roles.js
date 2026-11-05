@@ -1,3 +1,4 @@
+import {dateCode} from './calendar.js?v=10b';
 export const ROLE_IDS=['gatekeeper','engineer','medic','logistics'];
 export const LOCATION_IDS=['dorm','canteen','gate','engineering','medical','supplies','isolation','power'];
 export const ROLES={
@@ -46,7 +47,7 @@ export const ROLE_DAYS={
  ]
 };
 export const roleTasks=s=>ROLE_DAYS[s.role]?.[(s.day||1)-1]||[];
-export const roleEventId=s=>`EV-212609${15+(s.day||1)}-${(s.role||'gatekeeper').toUpperCase()}`;
+export const roleEventId=s=>`EV-${dateCode(s.day||1)}-${(s.role||'gatekeeper').toUpperCase()}`;
 // The delivery is scheduled for 09:10 in every profession's first day.
 ROLE_DAYS.medic[0][1].earliest=550;
 ROLE_DAYS.logistics[0][0].earliest=550;

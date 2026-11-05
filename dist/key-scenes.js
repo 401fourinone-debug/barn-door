@@ -1,4 +1,4 @@
-import {environmentAt,cameraEnvironment,nearbyContacts} from './environment.js?v=09c';
+import {environmentAt,cameraEnvironment,nearbyContacts} from './environment.js?v=10b';
 const people='assets/gate-people-v06.png',outside='assets/gate-outside-v06.png';
 export const GATE_SETTINGS=[
  {id:'empty',name:'平常待命 · 沒有來訪',art:'assets/gate-empty-v06.png',position:'center',size:'cover',time:630,note:'入口平常的樣子。沒有因為你看過別的設定圖，就讓人憑空出現。'},

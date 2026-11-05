@@ -1,12 +1,13 @@
-import {crewName,crewAvailable} from './crew.js?v=09c';
-import {ROLE_IDS,ROLES} from './roles.js?v=09c';
+import {crewName,crewAvailable} from './crew.js?v=10b';
+import {ROLE_IDS,ROLES} from './roles.js?v=10b';
+import {dateCode} from './calendar.js?v=10b';
 export const RESOURCE_NAMES={power:'備援電力',water:'可用淨水',food:'可發物資',care:'照護餘裕',access:'接待餘裕',signal:'通訊餘裕'};
 export const ROLE_POOLS={gatekeeper:['radio','rest','motor','unbooked-visitor','outside-dog','uplink-noise'],engineer:['drain','motor','water-reading','battery-warm','camera-link','uplink-noise'],medic:['rest','water-reading','ppe-seal','sleep-distress','unbooked-visitor','camera-link'],logistics:['meal','parcel','cold-store','ration-argument','outside-dog','radio']};
 const domains={drain:'water',rest:'care',radio:'signal',meal:'food',motor:'access',parcel:'food','cold-store':'food','water-reading':'water','camera-link':'signal','battery-warm':'power','unbooked-visitor':'access','outside-dog':'care','ppe-seal':'care','sleep-distress':'care','ration-argument':'food','uplink-noise':'signal'};
 const abs=s=>((s.day||1)-1)*1440+s.time;
 const stamp=n=>({day:Math.floor(n/1440)+1,time:n%1440});
 const clamp=n=>Math.max(0,Math.min(100,n));
-const idFor=s=>`EV-212609${15+(s.day||1)}-WORLD`;
+const idFor=s=>`EV-${dateCode(s.day||1)}-WORLD`;
 const names={dorm:'生活區寢室',canteen:'公共餐廳',gate:'守門控制室',engineering:'工程維護區',medical:'醫療工作室',supplies:'物資倉儲',isolation:'隔離接待室',power:'能源通訊室'};
 const worker={dorm:'生活區同事',canteen:'後勤',gate:'守門同事',engineering:'工程技師',medical:'醫護',supplies:'後勤',isolation:'接待同事',power:'能源同事'};
 export function initWorld(s){
@@ -49,7 +50,7 @@ const NPC={
 };
 function processWorld(s){const w=s.world,now=abs(s);
  // The model's scheduled work has exact game timestamps even when a button advances time.
- for(let day=1;day<=s.day;day++)for(const time of [492,575,660,755,850,930])for(const role of ROLE_IDS){if(role===s.role)continue;const key=`npc-${day}-${time}-${role}`;const at=(day-1)*1440+time;if(at>now||at<(w.since||0)||w.npcDone.includes(key))continue;const personId=({gatekeeper:'P01',engineer:'P02',medic:'P03',logistics:'P04'})[role];if(crewAvailable(s,personId)>now)continue;w.npcDone.push(key);const actualAt=Math.max(at,now);const [title,domain,text]=NPC[role][[492,575,660,755,850,930].indexOf(time)],tight=w.resources[domain]<78,id=journal(s,crewName(({gatekeeper:'P01',engineer:'P02',medic:'P03',logistics:'P04'})[role]),title+'：'+text+(tight?' 先前的待查仍占用餘裕，下一輪需多留確認時間。':''),'同事回報',actualAt);scheduleEffect(s,key,domain,tight,id,ROLES[role].name+'的'+title,actualAt);}
+ for(let day=Math.max(1,(s.day||1)-1);day<=s.day;day++)for(const time of [492,575,660,755,850,930])for(const role of ROLE_IDS){if(role===s.role)continue;const key=`npc-${day}-${time}-${role}`;const at=(day-1)*1440+time;if(at>now||at<(w.since||0)||w.npcDone.includes(key))continue;const personId=({gatekeeper:'P01',engineer:'P02',medic:'P03',logistics:'P04'})[role];if(crewAvailable(s,personId)>now)continue;w.npcDone.push(key);const actualAt=Math.max(at,now);const [title,domain,text]=NPC[role][[492,575,660,755,850,930].indexOf(time)],tight=w.resources[domain]<78,id=journal(s,crewName(({gatekeeper:'P01',engineer:'P02',medic:'P03',logistics:'P04'})[role]),title+'：'+text+(tight?' 先前的待查仍占用餘裕，下一輪需多留確認時間。':''),'同事回報',actualAt);scheduleEffect(s,key,domain,tight,id,ROLES[role].name+'的'+title,actualAt);}
  const due=w.queue.filter(q=>q.due<=now).sort((a,b)=>a.due-b.due);for(const q of due){w.queue=w.queue.filter(x=>x.id!==q.id);const delta=q.pending?-2:1;w.resources[q.domain]=clamp(w.resources[q.domain]+delta);const label=RESOURCE_NAMES[q.domain];
  if(q.stage===1){const text=`因為「${q.title}」：${effects[q.domain][q.pending?0:1]}${label}${delta>0?'+':''}${delta}。`;journal(s,q.actor,text,'後續影響',q.due,q.source);w.queue.push({...q,id:q.id+'-next',due:q.due+100,stage:2});}
  else{const d=workDelay(s,q.domain);journal(s,q.actor,`接續「${q.title}」：${q.pending?'未完成項目仍列在原紀錄，沒有自動結案。':'先前的安排已供下一輪使用。'}${d>0?'相關新工作的預估處理會多 '+d+' 分鐘。':d<0?'相關新工作的預估處理可少 '+(-d)+' 分鐘。':'相關新工作目前按原時間安排。'}`,'連帶影響',q.due,q.source);}}

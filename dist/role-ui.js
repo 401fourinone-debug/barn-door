@@ -1,5 +1,6 @@
-import {roleOf,roleTasks,roleEventId} from './roles.js?v=09c';
-import {can,timeText,outcome} from './engine.js?v=09c';
+import {roleOf,roleTasks,roleEventId} from './roles.js?v=10b';
+import {can,timeText,outcome} from './engine.js?v=10b';
+import {YEAR_DAYS} from './calendar.js?v=10b';
 const names={dorm:'寢室',canteen:'餐廳',gate:'守門室',engineering:'工程區',medical:'醫療工作室',supplies:'物資倉儲',isolation:'隔離接待室',power:'能源通訊室'};
 const move=(location,label)=>`<button class="primary" data-move="${location}">${label||'前往'+names[location]+' →'}</button>`;
 export function rolePanel(panel,s,{header,c,b,ui,esc}){
@@ -19,7 +20,7 @@ export function rolePanel(panel,s,{header,c,b,ui,esc}){
   c.innerHTML=`<p class="lead">交給${role.team}：現在 ${timeText(s.time)}，交班時間16:00。</p><ol class="briefing-list">${(s.roleChoices||[]).map(x=>`<li><strong>${esc(x.title)} · ${x.pending?'仍待追蹤':'已完成'}</strong><span>${esc(x.reply)} 負責：${esc(x.pending?role.team:x.actor)}。</span></li>`).join('')}</ol>${reason?'<div class="notice">'+esc(reason)+'</div>':''}<div class="dialog-actions">${!reason?b(s.handoverRead?'確認下班':'交代給'+role.team,s.handoverRead?'handover':'reviewHandover','primary'):s.location!==role.home?move(role.home):ui('回去繼續待命','standby','primary')}${ui('查看事件簿','journal')}</div>`;return;
  }
  if(panel==='result'){
-  header(s.day===3?'三天職務試玩完成':role.name+'，第'+s.day+'天下班了','SHIFT RESULT');const o=outcome(s),history=[...(s.history||[]),{day:s.day,decision:s.dayChoice}];
-  c.innerHTML=`<p class="result-title">${role.name}的交接紀錄</p><p class="lead">${esc(o.lesson)}</p><div class="result-metrics"><div><label>庇護所健全度</label><strong>${s.health}</strong><small>/100</small></div><div><label>大家對你的信任</label><strong>${s.trust}</strong><small>/100</small></div></div><ul class="result-list">${history.map(h=>`<li>第${h.day}天：${esc(h.decision)}</li>`).join('')}</ul><div class="notice">待追蹤事項仍在原紀錄中。這是三天職務原型，還不是全年勝負。</div><div class="dialog-actions">${s.day<3?b('休息，繼續第'+(s.day+1)+'天','nextDay','primary'):ui('選其他身分重玩','reset','primary')}${ui('查看事件簿','journal')}<button class="secondary" data-export="session">下載這次紀錄</button></div>`;
+  header(s.day>=YEAR_DAYS?'一年期滿':role.name+'，第'+s.day+'天下班了','SHIFT RESULT');const o=outcome(s),history=[...(s.history||[]),{day:s.day,decision:s.dayChoice}];
+  c.innerHTML=`<p class="result-title">${role.name}的交接紀錄</p><p class="lead">${esc(o.lesson)}</p><div class="result-metrics"><div><label>庇護所健全度</label><strong>${s.health}</strong><small>/100</small></div><div><label>大家對你的信任</label><strong>${s.trust}</strong><small>/100</small></div></div><ul class="result-list">${history.slice(-7).map(h=>`<li>第${h.day}天：${esc(h.decision)}</li>`).join('')}</ul><div class="notice">待追蹤事項仍在原紀錄中。休息後會帶到隔天。</div><div class="dialog-actions">${s.day<YEAR_DAYS?b('休息，繼續第'+(s.day+1)+'天','nextDay','primary'):ui('選其他身分重玩','reset','primary')}${ui('查看事件簿','journal')}<button class="secondary" data-export="session">下載這次紀錄</button></div>`;
  }
 }
