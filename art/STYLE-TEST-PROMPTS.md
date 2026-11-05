@@ -74,3 +74,13 @@ comic book item sheet, graphic novel art, clean bold black ink outlines, flat ce
 comic book panel, graphic novel art, clean bold black ink outlines, flat cel shading, light halftone texture, simple uncluttered composition. Daytime. Over-the-shoulder view from inside a sturdy, clean, well-maintained shelter guard post. Left foreground: the back of a gatekeeper's head and shoulder in an olive jacket, lit by soft daylight. Bottom: a metal inspection tray with a 3 by 2 grid of compartments on a light gray desk. Center: a thick armored glass window with a speaker grille. Outside, bright overcast morning in a green subtropical mountain valley in Taiwan, soft white mist drifting between forested slopes, a concrete path and gate; close behind the glass a traveler in a rain poncho and respirator mask raises one hand in greeting. Fresh, airy palette: pale sky blue, misty white, lush greens, warm sunlight on surfaces, small teal monitor screens and a small red indicator light inside. No text, no speech bubbles
 
 結果：明亮的綠色山谷與白霧，穿雨衣的來訪者揮手；墨線畫風與夜晚版一致，室內仍保留青綠螢幕和紅色指示燈。
+
+## 第八輪：用「編輯」把夜晚版改成白天（2026-11-05，Firefly Image 5）
+使用者回饋：A6 白天版和夜晚版風格差太多。原因是兩張分開生成。
+做法：在 Firefly 打開 A5 夜晚版，按鉛筆「編輯」，輸入改時段的指令（10 點）。
+
+### A5-day. 守門櫃檯・白天（由 A5 編輯而來）
+Change the time to a bright overcast morning. Keep the exact same composition, characters, ink line style, halftone texture and tray. Outside the window: soft white mist with green forested mountain slopes faintly visible in daylight. Replace the dark cyan night tint with natural daylight; the guard post interior is lit by daylight from the window, the desk lamp is off. Keep the stranger, the hand on the glass and the respirator mask unchanged.
+
+結果：構圖、人物、托盤、墨線完全一致，只換成白天光線；窗外白霧與淡綠山坡。兩版放在一起看得出是同一個遊戲。
+規則：同一場景的時段與天候變化，一律從同一張基準圖用「編輯」改，不要重新生成。
